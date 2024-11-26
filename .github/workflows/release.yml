@@ -1,6 +1,7 @@
 name: Build and Upload APKs
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
