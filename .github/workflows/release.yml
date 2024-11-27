@@ -1,9 +1,13 @@
-name: Build, Upload, and Sync
+name: Build & Upload Apk To Release
 
 on:
-  release:
-    types: [ published ] # 自动触发同步
-
+  workflow_dispatch:
+  push:
+    branches:
+      - main  # 监听 main 分支的推送
+  pull_request:
+    branches:
+      - main  # 监听 main 分支的拉取请求
 jobs:
   build-and-sync:
     runs-on: ubuntu-latest
@@ -16,13 +20,13 @@ jobs:
           echo "Current time: $(date)"
 
       # 检出代码
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       # 缓存 Gradle
       - name: Cache Gradle
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -33,7 +37,7 @@ jobs:
 
       # 设置 JDK 11
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
@@ -72,59 +76,42 @@ jobs:
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
           buildToolsVersion: 31.0.0
 
-          # 上传 Normal APK 到当前仓库 Release
+      # 上传 Normal APK 到当前仓库 Release
       - name: Upload Normal APK to Source Release
-        uses: softprops/action-gh-release@v2
+        uses: termux/upload-release-action@v4.2.0
         with:
-          files: |
-            ${{ steps.sign_normal_apk.outputs.signedFile }}
-          draft: false
-          prerelease: false
-          tag_name: ${{ github.ref_name }}
-          name: Sesame-Normal-${{ github.ref_name }}
-          body: |
-            Sesame-Normal-${{ github.ref_name }} Release
-
-            **更新内容**:
-            ${{ github.event.release.body || '无更新说明' }}
+          asset_name: Sesame-Normal-${{ github.event.release.tag_name || github.ref_name }}.apk
+          file: ${{ steps.sign_normal_apk.outputs.signedFile }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          target_commitish: ${{ github.sha }}
+          tag: ${{ github.ref_name }}
+          overwrite: true
+          checksums: sha256
+          checksums_file_name: CHECKSUMS-Sesame-Normal-${{ github.event.release.tag_name || github.ref_name }}.%algo%
 
       # 上传 Compatible APK 到当前仓库 Release
       - name: Upload Compatible APK to Source Release
-        uses: softprops/action-gh-release@v2
+        uses: termux/upload-release-action@v4.2.0
         with:
-          files: |
-            ${{ steps.sign_compatible_apk.outputs.signedFile }}
-          draft: false
-          prerelease: false
-          tag_name: ${{ github.ref_name }}
-          name: Sesame-Compatible-${{ github.ref_name }}
-          body: |
-            Sesame-Compatible-${{ github.ref_name }} Release
-
-            **更新内容**:
-            ${{ github.event.release.body || '无更新说明' }}
+          asset_name: Sesame-Compatible-${{ github.event.release.tag_name || github.ref_name }}.apk
+          file: ${{ steps.sign_compatible_apk.outputs.signedFile }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          target_commitish: ${{ github.sha }}
+          tag: ${{ github.ref_name }}
+          overwrite: true
+          checksums: sha256
+          checksums_file_name: CHECKSUMS-Sesame-Compatible-${{ github.event.release.tag_name || github.ref_name }}.%algo%
 
+      # 同步 Release 到目标仓库
+      # - name: Sync Release to Target Repository
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       ${{ steps.sign_normal_apk.outputs.signedFile }}
+      #       ${{ steps.sign_compatible_apk.outputs.signedFile }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     tag_name: ${{ github.ref_name }}
+      #     repository: Xposed-Modules-Repo/fansirsqi.xposed.sesame # 指定目标仓库
+      #     body: |
+      #       本 Release 同步自源仓库 [Sesame-TK](https://github.com/${{ github.repository }})
 
-        # 同步 Release 到目标仓库
-      - name: Sync Release to Target Repository
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ${{ steps.sign_normal_apk.outputs.signedFile }}
-            ${{ steps.sign_compatible_apk.outputs.signedFile }}
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # 使用具有写入目标仓库权限的PAT
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-          body: |
-            本 Release 同步自源仓库 [Sesame-TK](https://github.com/${{ github.repository }})
-            
-            **更新内容**:
-            ${{ github.event.release.body || '无更新说明' }}
-        env:
-          GITHUB_REPOSITORY: 'Xposed-Modules-Repo/fansirsqi.xposed.sesame' # 目标仓库的拥有者和仓库名称
+      #       **更新内容**:
+      #       ${{ github.event.release.body || '无更新说明' }}
