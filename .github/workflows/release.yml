@@ -77,36 +77,46 @@ jobs:
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
           buildToolsVersion: 31.0.0
 
-          # 上传 Normal APK 到当前仓库 Release
-      - name: Upload Normal APK to Source Release
+      # 创建新的 Release 标签
+      - name: Create new release tag
+        id: create_release_tag
+        run: |
+          echo "Creating new release tag..."
+          NEW_TAG="v${{ github.ref_name }}-${{ github.run_id }}"
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+          echo "::set-output name=new_tag::$NEW_TAG"
+
+      # 上传 Normal APK 到新的 Release
+      - name: Upload Normal APK to New Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ steps.sign_normal_apk.outputs.signedFile }}
           draft: false
           prerelease: false
-          tag_name: ${{ github.ref_name }}
-          name: Sesame-Normal-${{ github.ref_name }}
+          tag_name: ${{ steps.create_release_tag.outputs.new_tag }}
+          name: Sesame-Normal-${{ steps.create_release_tag.outputs.new_tag }}
           body: |
-            Sesame-Normal-${{ github.ref_name }} Release
+            Sesame-Normal-${{ steps.create_release_tag.outputs.new_tag }} Release
 
             **更新内容**:
             ${{ github.event.release.body || '无更新说明' }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           target_commitish: ${{ github.sha }}
 
-      # 上传 Compatible APK 到当前仓库 Release
-      - name: Upload Compatible APK to Source Release
+      # 上传 Compatible APK 到新的 Release
+      - name: Upload Compatible APK to New Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ steps.sign_compatible_apk.outputs.signedFile }}
           draft: false
           prerelease: false
-          tag_name: ${{ github.ref_name }}
-          name: Sesame-Compatible-${{ github.ref_name }}
+          tag_name: ${{ steps.create_release_tag.outputs.new_tag }}
+          name: Sesame-Compatible-${{ steps.create_release_tag.outputs.new_tag }}
           body: |
-            Sesame-Compatible-${{ github.ref_name }} Release
+            Sesame-Compatible-${{ steps.create_release_tag.outputs.new_tag }} Release
 
             **更新内容**:
             ${{ github.event.release.body || '无更新说明' }}
