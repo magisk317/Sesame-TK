@@ -58,7 +58,7 @@ jobs:
           keyAlias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          buildToolsVersion: 31.0.0
+#          buildToolsVersion: 31.0.0
 
       # 签名 Compatible APK
       - name: Sign Compatible APK
@@ -70,7 +70,7 @@ jobs:
           keyAlias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          buildToolsVersion: 31.0.0
+#          buildToolsVersion: 31.0.0
 
         # 上传 Normal APK 到当前仓库 Release
       - name: Upload Normal APK to Source Release
@@ -101,18 +101,19 @@ jobs:
       - name: Sync Release to Target Repository
         uses: softprops/action-gh-release@v2
         with:
+          repository: Xposed-Modules-Repo/fansirsqi.xposed.sesame # 目标仓库的拥有者和仓库名称
+          nanme: Sesame-${{ github.event.release.tag_name || github.ref_name }} # 发布的名称。默认为标签名称
           files: |
             ${{ steps.sign_normal_apk.outputs.signedFile }}
             ${{ steps.sign_compatible_apk.outputs.signedFile }}
           token: ${{ secrets.TARGET_REPO_PAT }} # 使用具有写入目标仓库权限的PAT
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-          body: |
+          release_name: ${{ github.ref_name }}
+          draft: false #指示此版本是否为草稿
+          prerelease: false #是否为预发行
+          append_body: true #是否将源仓库 Release 内容附加到此版本
+          make_latest: true #是否将此版本设为最新版本
+          body: | #传达此版本中显著变化的文本
             本 Release 同步自源仓库 [Sesame-TK](https://github.com/${{ github.repository }})
-            
             **更新内容**:
             ${{ github.event.release.body || '无更新说明' }}
-        env:
-          GITHUB_REPOSITORY: 'Xposed-Modules-Repo/fansirsqi.xposed.sesame' # 目标仓库的拥有者和仓库名称

@@ -28,8 +28,8 @@ public class NotificationUtil {
     try {
       NotificationUtil.context = context;
       NotificationUtil.stop();
-      titleText = "启动中";
-      contentText = "暂无消息";
+      titleText = "🚀 启动中";
+      contentText = "🔔 暂无消息";
       mNotifyManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
       Intent it = new Intent(Intent.ACTION_VIEW);
       it.setData(Uri.parse("alipays://platformapi/startapp?appId="));
@@ -112,7 +112,7 @@ public class NotificationUtil {
    */
   public static void updateNextExecText(long nextExecTime) {
     try {
-      titleText = nextExecTime > 0 ? "⏰ 下次施工 " + TimeUtil.getTimeStr(nextExecTime) : "";
+      titleText = nextExecTime > 0 ? "⏰ 下次施工时间 " + TimeUtil.getTimeStr(nextExecTime) : "";
       sendText();
     } catch (Exception e) {
       LogUtil.printStackTrace(e);
@@ -126,7 +126,7 @@ public class NotificationUtil {
    */
   public static void updateLastExecText(String content) {
     try {
-      contentText = "📌 上次施工 " + TimeUtil.getTimeStr(System.currentTimeMillis()) + " " + content;
+      contentText = "📌 上次施工时间 " + TimeUtil.getTimeStr(System.currentTimeMillis()) + " \n🔔 " + content;
       lastNoticeTime = System.currentTimeMillis();
       sendText();
     } catch (Exception e) {

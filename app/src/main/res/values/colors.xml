@@ -19,5 +19,8 @@
     <color name="colorPrimary">#2489FD</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="navigationBarColor">#AA000000</color>
+    <color name="button_pressed">#219fff</color>
+    <color name="button">#216eee</color>
+    <color name="button_text">#ffffff</color>
 
 </resources>

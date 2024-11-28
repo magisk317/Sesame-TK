@@ -274,6 +274,7 @@ public class MainActivity extends BaseActivity {
       menu.add(0, 5, 5, R.string.export_the_statistic_file);
       menu.add(0, 6, 6, R.string.import_the_statistic_file);
       menu.add(0, 7, 7, R.string.view_debug);
+      menu.add(0, 9, 9, R.string.extend);
       menu.add(0, 8, 8, R.string.settings);
     } catch (Exception e) {
       LogUtil.printStackTrace(e);
@@ -348,6 +349,11 @@ public class MainActivity extends BaseActivity {
       case 8:
         selectSettingUid();
         break;
+      case 9:
+        //扩展功能
+        startActivity(new Intent(this, ExtendActivity.class));
+        break;
+
     }
     return super.onOptionsItemSelected(item);
   }

@@ -2,6 +2,7 @@ package fansirsqi.xposed.sesame.model.modelFieldExt;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +58,10 @@ public class ListModelField extends ModelField<List<String>> {
         btn.setText(getName());
         btn.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         btn.setTextColor(Color.parseColor("#216EEE"));
-        btn.setBackground(context.getResources().getDrawable(R.drawable.button));
+        // 根据API版本选择合适的方法获取Drawable资源
+        Drawable drawable;
+        drawable = context.getResources().getDrawable(R.drawable.button, context.getTheme());
+        btn.setBackground(drawable);
         btn.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         btn.setMinHeight(150);
         btn.setMaxHeight(180);
@@ -66,8 +70,10 @@ public class ListModelField extends ModelField<List<String>> {
 
         // 设置按钮点击事件，打开编辑对话框
         btn.setOnClickListener(v -> StringDialog.showEditDialog(v.getContext(), ((Button) v).getText(), this));
+
         return btn;
     }
+
 
     /**
      * 一个子类，用于将字符串列表转换为逗号分隔的字符串，并实现相应的设置和获取功能。
@@ -96,7 +102,6 @@ public class ListModelField extends ModelField<List<String>> {
                 reset();
                 return;
             }
-
             // 根据逗号分隔符解析字符串，并过滤掉空字符串
             List<String> list = new ArrayList<>();
             for (String str : configValue.split(",")) {

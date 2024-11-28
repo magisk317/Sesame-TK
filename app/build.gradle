@@ -123,10 +123,6 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    }
 }
 
 // 依赖项配置
