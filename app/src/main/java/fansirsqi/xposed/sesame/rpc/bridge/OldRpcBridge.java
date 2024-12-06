@@ -146,7 +146,7 @@ public class OldRpcBridge implements RpcBridge {
         // 检查响应中的 "memo" 字段是否包含 "系统繁忙"
         if (resultObject.optString("memo", "").contains("系统繁忙")) {
             ApplicationHook.setOffline(true); // 设置为离线状态
-            NotificationUtil.updateStatusText("系统繁忙，可能需要滑动验证");
+            Notify.updateStatusText("系统繁忙，可能需要滑动验证");
             Log.record("系统繁忙，可能需要滑动验证");
             return null; // 返回 null
         }
@@ -218,7 +218,7 @@ public class OldRpcBridge implements RpcBridge {
     private void handleLoginTimeout() {
         if (!ApplicationHook.isOffline()) {
             ApplicationHook.setOffline(true);
-            NotificationUtil.updateStatusText("登录超时");
+            Notify.updateStatusText("登录超时");
             if (BaseModel.getTimeoutRestart().getValue()) {
                 Log.record("尝试重新登录");
                 ApplicationHook.reLoginByBroadcast();
@@ -233,7 +233,7 @@ public class OldRpcBridge implements RpcBridge {
         if (BaseModel.getWaitWhenException().getValue() > 0) {
             long waitTime = System.currentTimeMillis() + BaseModel.getWaitWhenException().getValue();
             RuntimeInfo.getInstance().put(RuntimeInfo.RuntimeInfoKey.ForestPauseTime, waitTime);
-            NotificationUtil.updateStatusText("异常");
+            Notify.updateStatusText("异常");
             Log.record("触发异常, 等待至" + TimeUtil.getCommonDate(waitTime));
         }
     }

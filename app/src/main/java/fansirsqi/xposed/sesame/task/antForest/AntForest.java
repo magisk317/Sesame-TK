@@ -1,6 +1,5 @@
 package fansirsqi.xposed.sesame.task.antForest;
 
-import android.annotation.SuppressLint;
 import de.robv.android.xposed.XposedHelpers;
 import fansirsqi.xposed.sesame.data.Config;
 import fansirsqi.xposed.sesame.data.RuntimeInfo;
@@ -18,7 +17,12 @@ import fansirsqi.xposed.sesame.task.TaskCommon;
 import fansirsqi.xposed.sesame.task.antFarm.AntFarm.TaskStatus;
 import fansirsqi.xposed.sesame.ui.ObjReference;
 import fansirsqi.xposed.sesame.util.*;
-import java.text.SimpleDateFormat;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -261,7 +265,7 @@ public class AntForest extends ModelTask {
     try {
       // 获取当前时间
       Log.record("执行开始-蚂蚁森林");
-      NotificationUtil.setStatusTextExec();
+      Notify.setStatusTextExec();
 
       taskCount.set(0);
       selfId = UserMap.getCurrentUid();
@@ -586,7 +590,7 @@ public class AntForest extends ModelTask {
       StatisticsUtil.save();
       FriendWatch.save();
       String str_totalCollected = "收:" + totalCollected + " 帮:" + totalHelpCollected;
-      NotificationUtil.updateLastExecText(str_totalCollected);
+      Notify.updateLastExecText(str_totalCollected);
     }
   }
 
@@ -638,17 +642,19 @@ public class AntForest extends ModelTask {
   private void studentSignInRedEnvelope() {
     try {
       // 获取当前时间
-      Calendar calendar = Calendar.getInstance();
-      int hour = calendar.get(Calendar.HOUR_OF_DAY); // 小时（24小时制）
+      LocalTime currentTime = LocalTime.now(); // 获取当前本地时间
 
       // 定义签到时间范围
-      final int START_HOUR = 5;
-      final int END_HOUR = 10;
-      if (hour < START_HOUR) {
+      final LocalTime START_TIME = LocalTime.of(5, 0); // 5:00 AM
+      final LocalTime END_TIME = LocalTime.of(10, 0);  // 10:00 AM
+
+      // 判断当前时间是否在签到时间范围内
+      if (currentTime.isBefore(START_TIME)) {
         Log.other("【青春特权-学生签到】：5点前不执行签到 ❤️");
         return;
       }
-      if (hour < END_HOUR) {
+
+      if (currentTime.isBefore(END_TIME)) {
         // 当前时间在双倍积分时间内
         studentTaskHandle("双倍 🐯");
       } else {
@@ -710,7 +716,6 @@ public class AntForest extends ModelTask {
       }
     }
   }
-
   private JSONObject querySelfHome() {
     JSONObject userHomeObj = null; // 声明用户主页对象
     try {
@@ -718,21 +723,16 @@ public class AntForest extends ModelTask {
       // 调用远程接口获取用户主页信息并转换为 JSONObject 对象
       userHomeObj = new JSONObject(AntForestRpcCall.queryHomePage());
       long end = System.currentTimeMillis(); // 记录结束时间
-
       // 获取服务器时间
       long serverTime = userHomeObj.getLong("now");
-
-      // 将服务器时间转换为可读的时间格式
-      @SuppressLint("SimpleDateFormat")
-      SimpleDateFormat stime = new SimpleDateFormat("HH:mm:ss");
-      String formattedServerTime = stime.format(new Date(serverTime)); // 将服务器时间格式化为 hh:mm:ss
-
-      // 计算本地与服务器时间差
-      int offsetTime = offsetTimeMath.nextInteger((int) ((start + end) / 2 - serverTime));
-
-      // 将时间差格式化为人性化的字符串
+      Instant instant = Instant.ofEpochMilli(serverTime);
+      LocalDateTime serverLocalDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+      // 格式化服务器时间为 HH:mm:ss 格式
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+      String formattedServerTime = serverLocalDateTime.format(formatter);
+      //计算时间偏差
+      int offsetTime = (int) ((start + end) / 2 - serverTime);
       String formattedTimeDiff = formatTimeDifference(offsetTime);
-
       // 记录服务器时间与本地时间差
       Log.runtime("服务器时间：" + formattedServerTime + "，本地与服务器时间差：" + formattedTimeDiff);
     } catch (Throwable t) {
@@ -741,29 +741,25 @@ public class AntForest extends ModelTask {
     }
     return userHomeObj; // 返回用户主页对象
   }
-
   private JSONObject queryFriendHome(String userId) {
     JSONObject userHomeObj = null; // 声明用户主页对象
     try {
       long start = System.currentTimeMillis(); // 记录开始时间
-      // 调用远程接口获取好友主页信息并转换为 JSONObject 对象
       userHomeObj = new JSONObject(AntForestRpcCall.queryFriendHomePage(userId));
       long end = System.currentTimeMillis(); // 记录结束时间
-
       // 获取服务器时间
       long serverTime = userHomeObj.getLong("now");
-
-      // 将服务器时间转换为可读的时间格式
-      @SuppressLint("SimpleDateFormat")
-      SimpleDateFormat stime = new SimpleDateFormat("HH:mm:ss");
-      String formattedServerTime = stime.format(new Date(serverTime)); // 将服务器时间格式化为 hh:mm:ss
-      // 计算本地与服务器时间差
+      // 将服务器时间转为 LocalDateTime 对象
+      Instant instant = Instant.ofEpochMilli(serverTime);
+      LocalDateTime serverLocalDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+      // 格式化服务器时间为 HH:mm:ss 格式
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+      String formattedServerTime = serverLocalDateTime.format(formatter);
+      // 计算时间偏差
       int offsetTime = offsetTimeMath.nextInteger((int) ((start + end) / 2 - serverTime));
-
-      // 将时间差格式化为人性化的字符串
+      // 格式化时间差
       String formattedTimeDiff = formatTimeDifference(offsetTime);
-
-      // 记录服务器时间与本地时间差
+      // 打印日志
       Log.runtime("服务器时间：" + formattedServerTime + "，本地与服务器时间差：" + formattedTimeDiff);
     } catch (Throwable t) {
       // 记录异常信息
@@ -1154,7 +1150,7 @@ public class AntForest extends ModelTask {
                 if (BaseModel.getWaitWhenException().getValue() > 0) {
                   long waitTime = System.currentTimeMillis() + BaseModel.getWaitWhenException().getValue();
                   RuntimeInfo.getInstance().put(RuntimeInfo.RuntimeInfoKey.ForestPauseTime, waitTime);
-                  NotificationUtil.updateStatusText("异常");
+                  Notify.updateStatusText("异常");
                   Log.record("触发异常,等待至" + TimeUtil.getCommonDate(waitTime));
                   return;
                 }
@@ -1263,7 +1259,7 @@ public class AntForest extends ModelTask {
           } finally {
             StatisticsUtil.save();
             String str_totalCollected = "收:" + totalCollected + " 帮:" + totalHelpCollected;
-            NotificationUtil.updateLastExecText(str_totalCollected);
+            Notify.updateLastExecText(str_totalCollected);
             notifyMain();
           }
         };
@@ -2514,7 +2510,7 @@ public class AntForest extends ModelTask {
       for (int i = 0; i < animalProps.length(); i++) {
         jo = animalProps.getJSONObject(i);
         if (bestAnimalProp == null || jo.getJSONObject("main").getInt("holdsNum") > bestAnimalProp.getJSONObject("main").getInt("holdsNum")) {
-          bestAnimalProp = jo; // 选择最大数量的伙伴
+          bestAnimalProp = jo; // 默认选择最大数量的伙伴
         }
       }
       // 派遣伙伴

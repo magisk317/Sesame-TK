@@ -272,7 +272,6 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                                 if (execAtTimeList != null) {
                                   LocalDateTime lastExecTimeDateTime = TimeUtil.getLocalDateTimeByTimeMillis(lastExecTime);
                                   LocalDateTime nextExecTimeDateTime = TimeUtil.getLocalDateTimeByTimeMillis(lastExecTime + checkInterval);
-
                                   for (String execAtTime : execAtTimeList) {
                                     LocalDateTime execAtTimeDateTime = TimeUtil.getLocalDateTimeByTimeStr(execAtTime);
                                     if (execAtTimeDateTime != null
@@ -326,7 +325,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                   return;
                 }
                 Log.record("支付宝前台服务被销毁");
-                NotificationUtil.updateStatusText("支付宝前台服务被销毁");
+                Notify.updateStatusText("支付宝前台服务被销毁");
                 destroyHandler(true);
                 FriendWatch.unload();
                 StatisticsUtil.unload();
@@ -515,55 +514,44 @@ public class ApplicationHook implements IXposedHookLoadPackage {
         // Hook RPC 请求和响应
         if (BaseModel.getNewRpc().getValue() && BaseModel.getDebugMode().getValue()) {
           try {
-            rpcRequestUnhook =
-                XposedHelpers.findAndHookMethod(
+            rpcRequestUnhook = XposedHelpers.findAndHookMethod(
                     "com.alibaba.ariver.commonability.network.rpc.RpcBridgeExtension",
-                    classLoader,
-                    "rpc",
-                    String.class,
-                    boolean.class,
-                    boolean.class,
-                    String.class,
-                    classLoader.loadClass(ClassUtil.JSON_OBJECT_NAME),
-                    String.class,
-                    classLoader.loadClass(ClassUtil.JSON_OBJECT_NAME),
-                    boolean.class,
-                    boolean.class,
-                    int.class,
-                    boolean.class,
-                    String.class,
-                    classLoader.loadClass("com.alibaba.ariver.app.api.App"),
+                    classLoader, "rpc", String.class,
+                    boolean.class, boolean.class, String.class,
+                    classLoader.loadClass(ClassUtil.JSON_OBJECT_NAME), String.class,
+                    classLoader.loadClass(ClassUtil.JSON_OBJECT_NAME), boolean.class,
+                    boolean.class, int.class, boolean.class,
+                    String.class, classLoader.loadClass("com.alibaba.ariver.app.api.App"),
                     classLoader.loadClass("com.alibaba.ariver.app.api.Page"),
                     classLoader.loadClass("com.alibaba.ariver.engine.api.bridge.model.ApiContext"),
                     classLoader.loadClass("com.alibaba.ariver.engine.api.bridge.extension.BridgeCallback"),
-                    new XC_MethodHook() {
-                      @SuppressLint("WakelockTimeout")
-                      @Override
-                      protected void beforeHookedMethod(MethodHookParam param) {
-                        Object[] args = param.args;
-                        Object object = args[15];
-                        Object[] recordArray = new Object[4];
-                        recordArray[0] = System.currentTimeMillis();
-                        recordArray[1] = args[0];
-                        recordArray[2] = args[4];
-                        if (object != null) {
-                          rpcHookMap.put(object, recordArray);
-                          Log.capture("记录Hook ID: " + object.hashCode() + "\n方法: " + args[0] + "\n参数: " + args[4] + "\n");
-                        }
-                      }
-
-                      @SuppressLint("WakelockTimeout")
-                      @Override
-                      protected void afterHookedMethod(MethodHookParam param) {
-                        Object object = param.args[15];
-                        Object[] recordArray = rpcHookMap.remove(object);
-                        if (recordArray != null) {
-                          Log.capture("记录\n时间: " + recordArray[0] + "\n方法: " + recordArray[1] + "\n参数: " + recordArray[2] + "\n数据: " + recordArray[3] + "\n");
-                        } else {
-                          Log.capture("删除记录ID: " + object.hashCode());
-                        }
-                      }
-                    });
+                        new XC_MethodHook() {
+                          @Override
+                          protected void beforeHookedMethod(MethodHookParam param) {
+                            Object[] args = param.args;
+                            Object object = args[15];
+                            Object[] recordArray = new Object[4];
+                            recordArray[0] = System.currentTimeMillis();
+                            recordArray[1] = args[0];
+                            recordArray[2] = args[4];
+                            if (object != null) {
+                              rpcHookMap.put(object, recordArray);
+                              Log.capture("记录Hook ID: " + object.hashCode() + "\n方法: " + args[0] + "\n参数: " + args[4] + "\n");
+                            } else {
+                              Log.capture("警告: object 为 null，未能添加记录");
+                            }
+                          }
+                          @Override
+                          protected void afterHookedMethod(MethodHookParam param) {
+                            Object object = param.args[15];
+                            Object[] recordArray = rpcHookMap.remove(object);
+                            if (recordArray != null) {
+                              Log.capture("记录\n时间: " + recordArray[0] + "\n方法: " + recordArray[1] + "\n参数: " + recordArray[2] + "\n数据: " + recordArray[3] + "\n");
+                            } else {
+                              Log.capture("删除记录ID: " + object.hashCode() + "，记录已不存在");
+                            }
+                          }
+                        });
             Log.runtime(TAG, "hook record request successfully");
           } catch (Throwable t) {
             Log.runtime(TAG, "hook record request err:");
@@ -594,7 +582,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
           }
         }
         // 启动前台服务
-        NotificationUtil.start(service);
+        Notify.start(service);
         // 启动模型
         Model.bootAllModel(classLoader);
         StatusUtil.load();
@@ -621,7 +609,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
           stopHandler();
           BaseModel.destroyData();
           StatusUtil.unload();
-          NotificationUtil.stop();
+          Notify.stop();
           RpcIntervalLimit.clearIntervalLimit();
           Config.unload();
           Model.destroyAllModel();
@@ -674,7 +662,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
 
     try {
       // 更新通知中的下次执行时间文本，显示为当前时间加上延迟时间
-      NotificationUtil.updateNextExecText(System.currentTimeMillis() + delayMillis);
+      Notify.updateNextExecText(System.currentTimeMillis() + delayMillis);
     } catch (Exception e) {
       // 如果更新通知文本时发生异常，捕获异常并打印堆栈跟踪
       Log.printStackTrace(e);

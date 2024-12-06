@@ -25,4 +25,12 @@ public class ReserveRpcCall {
                         + VERSION + "\",\"source\":\"chInfo_ch_appcenter__chsub_9patch\"}]");
     }
 
+    /* 查询地图树苗 */
+    public static String queryAreaTrees() {
+        return ApplicationHook.requestString("alipay.antmember.forest.h5.queryAreaTrees", "[{}]");
+    }
+    public static String queryTreeItemsForExchange(String applyActions, String itemTypes) {
+        String args = "[{\"applyActions\":\"" + applyActions + "\",\"itemTypes\":\"" + itemTypes + "\"}]";
+        return ApplicationHook.requestString("alipay.antforest.forest.h5.queryTreeItemsForExchange", args);
+    }
 }

@@ -1,6 +1,7 @@
 package fansirsqi.xposed.sesame.util;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -170,13 +171,28 @@ public class PermissionUtil {
    */
   private static void startActivitySafely(Context context, Intent intent, String fallbackAction) {
     try {
+      // 检查上下文是否为 Activity 类型
+      if (!(context instanceof Activity)) {
+        // 如果不是 Activity 类型，添加 FLAG_ACTIVITY_NEW_TASK
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      } else {
+        // 如果是 Activity 类型，可以选择是否使用 addFlags()
+        // addFlags 用于添加标志，而不会覆盖已有的标志
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      }
+      // 尝试启动活动
       context.startActivity(intent);
     } catch (ActivityNotFoundException ex) {
+      // 如果活动未找到，启动一个回退的 Intent
       Intent fallbackIntent = new Intent(fallbackAction);
       fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       context.startActivity(fallbackIntent);
+    } catch (Exception e) {
+      // 处理其他可能的异常
+      Log.printStackTrace(e);
     }
   }
+
 
   /**
    * 安全地获取应用上下文，如果未挂钩则返回null。

@@ -1,12 +1,12 @@
 package fansirsqi.xposed.sesame.util;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
@@ -28,9 +28,9 @@ public class TimeUtil {
       // 使用 THREAD_LOCAL 的 DateTimeFormatter 进行解析
       DateTimeFormatter formatter = OTHER_DATE_TIME_FORMAT_THREAD_LOCAL.get();
       LocalDateTime dateTime = LocalDateTime.parse(timers, formatter);
-      return dateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli();  // 转换为时间戳
+      return dateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(); // 转换为时间戳
     } catch (Exception e) {
-      Log.printStackTrace(e);  // 异常打印
+      Log.printStackTrace(e); // 异常打印
     }
     return 0;
   }
@@ -38,7 +38,7 @@ public class TimeUtil {
   /**
    * 检查当前时间是否在给定的时间范围内。
    *
-   * @param timeRange 时间范围，格式为 "HH-mm-HH-mm"。
+   * @param timeRange 时间范围，格式为 "HHmm-HHmm"。
    * @return 如果当前时间在范围内，返回 true，否则返回 false。
    */
   public static Boolean checkNowInTimeRange(String timeRange) {
@@ -65,7 +65,7 @@ public class TimeUtil {
    * 检查给定的时间毫秒数是否在给定的时间范围内。
    *
    * @param timeMillis 时间毫秒数。
-   * @param timeRange 时间范围，格式为 "HH-mm-HH-mm"。
+   * @param timeRange 时间范围，格式为 "HHmm-HHmm"。
    * @return 如果时间在范围内，返回 true，否则返回 false。
    */
   public static Boolean checkInTimeRange(Long timeMillis, String timeRange) {
@@ -75,6 +75,8 @@ public class TimeUtil {
         String min = timeRangeArray[0];
         String max = timeRangeArray[1];
         return isAfterOrCompareTimeStr(timeMillis, min) && isBeforeOrCompareTimeStr(timeMillis, max);
+      }else{
+        Log.error("Time range bad format: [HHmm-HHmm] but got " + timeRange);
       }
     } catch (Exception e) {
       Log.printStackTrace(e);
@@ -190,9 +192,10 @@ public class TimeUtil {
    * @return 如果时间在之前，返回负数；如果相等，返回 0；如果之后，返回正数。
    */
   public static Integer isCompareTimeStr(Long timeMillis, String compareTimeStr) {
+
     try {
       LocalDateTime timeDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), ZoneId.systemDefault());
-      LocalTime compareTime = LocalTime.parse(compareTimeStr, DateTimeFormatter.ofPattern("HH-mm-ss"));
+      LocalTime compareTime = LocalTime.parse(compareTimeStr, DateTimeFormatter.ofPattern("HHmm")).withSecond(0).withNano(0);
       LocalDateTime compareDateTime = LocalDateTime.of(timeDateTime.toLocalDate(), compareTime);
       return timeDateTime.compareTo(compareDateTime);
     } catch (Exception e) {
@@ -208,18 +211,7 @@ public class TimeUtil {
    * @return 日历对象。
    */
   public static LocalDateTime getTodayLocalDateTimeByTimeStr(String timeStr) {
-    return getLocalDateTimeByTimeStr(null, timeStr);
-  }
-
-  public static LocalDateTime getLocalDateTimeByTimeStr(String timeStr) {
-    try {
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss");
-      LocalTime localTime = LocalTime.parse(timeStr, formatter);
-      return LocalDateTime.now().toLocalDate().atTime(localTime);
-    } catch (Exception e) {
-      Log.printStackTrace(e);
-    }
-    return null;
+    return getLocalDateTimeByTimeStr(LocalDateTime.now(), timeStr);
   }
 
   /**
@@ -230,11 +222,58 @@ public class TimeUtil {
    * @return 日历对象。
    */
   public static LocalDateTime getLocalDateTimeByTimeStr(LocalDateTime timeMillis, String timeStr) {
+    if (timeStr == null || timeStr.isEmpty()) {
+      return null;
+    }
+    DateTimeFormatter formatter;
+    LocalTime localTime;
     try {
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss");
-      LocalTime localTime = LocalTime.parse(timeStr, formatter);
+      int length = timeStr.length();
+      // 解析时间字符串并生成 LocalTime 对象
+      if (length == 6) {
+        formatter = DateTimeFormatter.ofPattern("HHmmss");
+        localTime = LocalTime.parse(timeStr, formatter);
+      } else if (length == 4) {
+        formatter = DateTimeFormatter.ofPattern("HHmm");
+        localTime = LocalTime.parse(timeStr, formatter).withSecond(0).withNano(0);
+      } else if (length == 2) {
+        formatter = DateTimeFormatter.ofPattern("HH");
+        localTime = LocalTime.parse(timeStr, formatter).withMinute(0).withSecond(0).withNano(0);
+      } else {
+        return null; // 如果格式不对，直接返回 null
+      }
+      // 使用 `LocalTime` 调整原有的 `LocalDateTime`
       return timeMillis.with(localTime);
     } catch (Exception e) {
+      Log.printStackTrace(e);
+    }
+    return null;
+  }
+
+  public static LocalDateTime getLocalDateTimeByTimeStr(String timeStr) {
+    if (timeStr == null || timeStr.isEmpty()) {
+      return null;
+    }
+    DateTimeFormatter formatter;
+    LocalTime localTime;
+    try {
+      int length = timeStr.length();
+      // 解析时间字符串并生成 LocalTime 对象
+      if (length == 6) {
+        formatter = DateTimeFormatter.ofPattern("HHmmss");
+        localTime = LocalTime.parse(timeStr, formatter);
+      } else if (length == 4) {
+        formatter = DateTimeFormatter.ofPattern("HHmm");
+        localTime = LocalTime.parse(timeStr, formatter).withSecond(0).withNano(0);
+      } else if (length == 2) {
+        formatter = DateTimeFormatter.ofPattern("HH");
+        localTime = LocalTime.parse(timeStr, formatter).withMinute(0).withSecond(0).withNano(0);
+      } else {
+        return null; // 如果格式不对，直接返回 null
+      }
+      // 当前日期 + 解析的时间
+      return LocalDateTime.now().toLocalDate().atTime(localTime);
+    } catch (DateTimeParseException e) {
       Log.printStackTrace(e);
     }
     return null;
@@ -320,23 +359,44 @@ public class TimeUtil {
   }
 
   /**
-   * 根据给定的时间字符串获取 LocalDateTime 对象。
+   * 根据时间字符串获取今天的日期时间对象。
    *
-   * @param timeStr 时间字符串，格式为 "HH:mm"。
-   * @return LocalDateTime 对象。
+   * @param timeStr 时间字符串，支持格式：
+   *                - "HHmmss"：精确到秒，例如 "123456"
+   *                - "HHmm"：精确到分钟，例如 "1234"
+   *                - "HH"：只包含小时，例如 "12"
+   * @return 返回当前日期和给定时间组成的 LocalDateTime 对象；如果解析失败，返回 null。
    */
   public static LocalDateTime getTodayByTimeStr(String timeStr) {
+    // 如果时间字符串为空或为null，返回null
+    if (timeStr == null || timeStr.isEmpty()) {
+      return null;
+    }
     try {
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm"); // 根据实际格式调整
+      int length = timeStr.length();
       LocalDate today = LocalDate.now();
-      return LocalDateTime.of(today, LocalDateTime.parse(timeStr, formatter).toLocalTime());
+      if (length == 6) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmmss");
+        return LocalDateTime.of(today, LocalTime.parse(timeStr, formatter));
+      } else if (length == 4) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmm");
+        // 使用当前日期和解析出来的 LocalTime 组合成 LocalDateTime
+        return LocalDateTime.of(today, LocalTime.parse(timeStr, formatter));
+      } else if (length == 2) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH");
+        return LocalDateTime.of(today, LocalTime.parse(timeStr, formatter));
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       Log.printStackTrace(e);
       return null;
     }
   }
 
-    /**
+
+
+  /**
    * 获取指定时间的周数。
    *
    * @param dateTime 时间。
@@ -380,6 +440,8 @@ public class TimeUtil {
    * @return 日期字符串，格式为 "dd日HH:mm:ss"。
    */
   public static String getCommonDate(Long timestamp) {
-    return new SimpleDateFormat("dd日HH:mm:ss").format(timestamp);
+    // 使用 DateTimeFormatter 和 java.time.Instant 来提高性能
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd日HH:mm:ss").withZone(ZoneId.systemDefault()); // 使用默认时区
+    return formatter.format(Instant.ofEpochMilli(timestamp)); // 转换时间戳为 Instant 对象
   }
 }

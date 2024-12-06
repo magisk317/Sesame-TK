@@ -1,19 +1,13 @@
 package fansirsqi.xposed.sesame.util;
 
 import static fansirsqi.xposed.sesame.util.TimeUtil.getFormatDateTime;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
-
 import fansirsqi.xposed.sesame.model.BaseModel;
 
 public class Loger {
-
     // 使用 SLF4J 的 LoggerFactory 来创建日志记录器
     private static final Logger runtimeLogger = LoggerFactory.getLogger("runtime");
     private static final Logger recordLogger = LoggerFactory.getLogger("record");
@@ -25,13 +19,6 @@ public class Loger {
     private static final Logger errorLogger = LoggerFactory.getLogger("error");
     private static final Logger debugLogger = LoggerFactory.getLogger("debug");
 
-    // 创建一个 ThreadLocal<SimpleDateFormat> 实例，用于日期格式化
-    private static ThreadLocal<SimpleDateFormat> createThreadLocal(final String pattern) {
-        return ThreadLocal.withInitial(() -> new SimpleDateFormat(pattern, Locale.getDefault()));
-    }
-
-    public static final ThreadLocal<SimpleDateFormat> DATE_FORMAT_THREAD_LOCAL = createThreadLocal("yyyy-MM-dd");
-    public static final ThreadLocal<SimpleDateFormat> DATE_TIME_FORMAT_THREAD_LOCAL = createThreadLocal("yyyy-MM-dd HH:mm:ss");
 
     // 初始化日志系统
     static {

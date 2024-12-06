@@ -87,14 +87,14 @@ android {
         normal {
             dimension "default" // 普通产品风味
             ext.applicationType = "Normal"
-            minSdkVersion 27    // 适用于较新的 Android 版本8
-            targetSdkVersion 34
+            minSdk 27    // 适用于较新的 Android 版本8
+            targetSdk 34
         }
         compatible {
             dimension "default" // 兼容产品风味
             ext.applicationType = "Compatible"
-            minSdkVersion 21    // 支持较老的 Android 版本
-            targetSdkVersion 27
+            minSdk 21    // 支持较老的 Android 版本
+            targetSdk 27
         }
     }
     buildTypes {

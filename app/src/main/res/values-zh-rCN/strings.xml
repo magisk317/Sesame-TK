@@ -189,6 +189,14 @@
     <string name="normal_text">数据加载中…</string>
     <string name="build_version_1_0_0">Build Version: </string>
     <string name="bulid_target">Build Target: </string>
-    <string name="text_api"></string>
+    <string name="text_api">…</string>
+    <string name="search_for_unlocked_items">查询未解锁项目</string>
+    <string name="search_for_unlocked_regions">查询未解锁地区</string>
+    <string name="search_for_new_items_on_saplings">查询树苗上新</string>
+    <string name="query_the_remaining_amount_of_saplings">查询树苗余量</string>
+    <string name="extended_func">扩展功能</string>
+    <string name="the_image_of_main">Main image</string>
+    <string name="the_image_of_unactivated">The image of unactivated</string>
+    <string name="debug_tips">已发送请求，请在全部日志查看结果！</string>
 
 </resources>

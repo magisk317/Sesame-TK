@@ -2,7 +2,7 @@ package fansirsqi.xposed.sesame.rpc.bridge;
 
 
 
-import static fansirsqi.xposed.sesame.util.NotificationUtil.context;
+import static fansirsqi.xposed.sesame.util.Notify.context;
 
 import de.robv.android.xposed.XposedHelpers;
 import fansirsqi.xposed.sesame.entity.RpcEntity;
@@ -11,7 +11,7 @@ import fansirsqi.xposed.sesame.model.BaseModel;
 import fansirsqi.xposed.sesame.rpc.intervallimit.RpcIntervalLimit;
 import fansirsqi.xposed.sesame.util.ClassUtil;
 import fansirsqi.xposed.sesame.util.Log;
-import fansirsqi.xposed.sesame.util.NotificationUtil;
+import fansirsqi.xposed.sesame.util.Notify;
 import fansirsqi.xposed.sesame.util.RandomUtil;
 import fansirsqi.xposed.sesame.util.TimeUtil;
 
@@ -131,7 +131,7 @@ null,"{\"__apiCallStartTime\":"+ System.currentTimeMillis()
           boolean containsSuccess = (Boolean) XposedHelpers.callMethod(obj, "containsKey", "success");
           if (!containsSuccess) {
           rpcEntity.setError();
-          NotificationUtil.sendNewNotification(context.getApplicationContext(),"⚠️已触发请求频繁 "+ TimeUtil.getTimeStr(System.currentTimeMillis()),"请手动进入支付宝查看详情，正常请忽略😛",9527);
+          Notify.sendNewNotification(context.getApplicationContext(),"⚠️已触发请求频繁 "+ TimeUtil.getTimeStr(System.currentTimeMillis()),"请手动进入支付宝查看详情，正常请忽略😛",9527);
         Log.error(
             "\n=======================================================>\n"
                 + "新 RPC 响应 | id: "
@@ -167,7 +167,7 @@ null,"{\"__apiCallStartTime\":"+ System.currentTimeMillis()
             if ("2000".equals(errorCode)) {
               if (!ApplicationHook.isOffline()) {
                 ApplicationHook.setOffline(true);
-                NotificationUtil.updateStatusText("登录超时");
+                Notify.updateStatusText("登录超时");
                 if (BaseModel.getTimeoutRestart().getValue()) {
                     Log.record("尝试重新登录");
                     ApplicationHook.reLoginByBroadcast();

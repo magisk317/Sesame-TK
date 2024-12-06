@@ -13,6 +13,7 @@ import fansirsqi.xposed.sesame.task.TaskCommon;
 import fansirsqi.xposed.sesame.task.antFarm.AntFarm.TaskStatus;
 import fansirsqi.xposed.sesame.util.Log;
 import fansirsqi.xposed.sesame.util.Maps.UserMap;
+import fansirsqi.xposed.sesame.util.ResUtil;
 import fansirsqi.xposed.sesame.util.ThreadUtil;
 import fansirsqi.xposed.sesame.util.TimeUtil;
 
@@ -41,6 +42,7 @@ public class AntDodo extends ModelTask {
     private BooleanModelField usePropCollectTimes7Days;
     private BooleanModelField usePropCollectHistoryAnimal7Days;
     private BooleanModelField usePropCollectToFriendTimes7Days;
+    private BooleanModelField autoGenerateBook;
 
     @Override
     public ModelFields getFields() {
@@ -53,6 +55,7 @@ public class AntDodo extends ModelTask {
         modelFields.addField(usePropCollectTimes7Days = new BooleanModelField("usePropCollectTimes7Days", "使用道具 | 抽卡道具", false));
         modelFields.addField(usePropCollectHistoryAnimal7Days = new BooleanModelField("usePropCollectHistoryAnimal7Days", "使用道具 | 抽历史卡道具", false));
         modelFields.addField(usePropCollectToFriendTimes7Days = new BooleanModelField("usePropCollectToFriendTimes7Days", "使用道具 | 抽好友卡道具", false));
+        modelFields.addField(autoGenerateBook = new BooleanModelField("autoGenerateBook", "自动合成图鉴", false));
         return modelFields;
     }
 
@@ -69,6 +72,9 @@ public class AntDodo extends ModelTask {
             collect();
             if (collectToFriend.getValue()) {
                 collectToFriend();
+            }
+            if(autoGenerateBook.getValue()){
+                autoGenerateBook();
             }
         } catch (Throwable t) {
             Log.runtime(TAG, "start.run err:");
@@ -421,6 +427,44 @@ public class AntDodo extends ModelTask {
             }
         } catch (Throwable t) {
             Log.runtime(TAG, "AntDodo CollectHelpFriend err:");
+            Log.printStackTrace(TAG, t);
+        }
+    }
+
+    /**
+     * 自动合成图鉴
+     */
+    private void autoGenerateBook() {
+        try {
+            boolean hasMore;
+            int pageStart = 0;
+            do {
+                JSONObject jo = new JSONObject(AntDodoRpcCall.queryBookList(9, pageStart));
+                if (!ResUtil.checkResCode(TAG, jo)) {
+                    break;
+                }
+                jo = jo.getJSONObject("data");
+                hasMore = jo.getBoolean("hasMore");
+                pageStart += 9;
+                JSONArray bookForUserList = jo.getJSONArray("bookForUserList");
+                for (int i = 0; i < bookForUserList.length(); i++) {
+                    jo = bookForUserList.getJSONObject(i);
+                    if (!"已集齐".equals(
+                            jo.optString("medalGenerationStatus"))) {
+                        continue;
+                    }
+                    JSONObject animalBookResult = jo.getJSONObject("animalBookResult");
+                    String bookId = animalBookResult.getString("bookId");
+                    String ecosystem = animalBookResult.getString("ecosystem");
+                    jo = new JSONObject(AntDodoRpcCall.generateBookMedal(bookId));
+                    if (!ResUtil.checkResCode(TAG, jo)) {
+                        break;
+                    }
+                    Log.forest("神奇物种🦕合成勋章[" + ecosystem + "]");
+                }
+            } while (hasMore);
+        } catch (Throwable t) {
+            Log.runtime(TAG, "generateBookMedal err:");
             Log.printStackTrace(TAG, t);
         }
     }

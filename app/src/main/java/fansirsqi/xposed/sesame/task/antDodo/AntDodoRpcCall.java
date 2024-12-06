@@ -83,4 +83,14 @@ public class AntDodoRpcCall {
         return ApplicationHook.requestString("alipay.antdodo.rpc.h5.collect",
                 "[{\"targetUserId\":" + targetUserId + "}]");
     }
+
+    public static String queryBookList(int pageSize, int pageStart) {
+        String args = "[{\"pageSize\":" + pageSize + ",\"pageStart\":\"" + pageStart + "\",\"v2\":\"true\"}]";
+        return ApplicationHook.requestString("alipay.antdodo.rpc.h5.queryBookList", args);
+    }
+
+    public static String generateBookMedal(String bookId) {
+        String args = "[{\"bookId\":\"" + bookId + "\"}]";
+        return ApplicationHook.requestString("alipay.antdodo.rpc.h5.generateBookMedal", args);
+    }
 }
