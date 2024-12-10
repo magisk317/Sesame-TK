@@ -399,19 +399,22 @@ public class Files {
     }
   }
 
+
   /**
    * 关闭流对象
    *
    * @param c 要关闭的流对象
    */
   public static void close(Closeable c) {
-    try {
-      if (c != null) c.close(); // 关闭流
-    } catch (Throwable t) {
-      // 捕获并打印关闭流时的异常
-      Log.printStackTrace(TAG, t);
+    if (c != null) {
+      try {
+        c.close();
+      } catch (IOException e) {
+        Log.printStackTrace(TAG, e); // 捕获并记录关闭流时的 IO 异常
+      }
     }
   }
+
 
   /**
    * 从文件中读取内容
@@ -458,40 +461,44 @@ public class Files {
    * @param f 目标文件
    * @return 写入是否成功
    */
-  public static boolean write2File(String s, File f) {
-    // 文件已存在，检查是否有写入权限
+  /**
+   * 将字符串写入文件
+   *
+   * @param s 要写入的字符串
+   * @param f 目标文件
+   * @return 写入是否成功
+   */
+  public static synchronized boolean write2File(String s, File f) {
+    // 检查文件权限和目录结构
     if (f.exists()) {
       if (!f.canWrite()) {
-        //        Toast.show(f.getAbsoluteFile() + "没有写入权限！", true);
         ToastUtil.showToast(f.getAbsoluteFile() + "没有写入权限！");
         return false;
       }
-      // 如果是目录，则删除并重新创建文件
       if (f.isDirectory()) {
-        f.delete();
-        Objects.requireNonNull(f.getParentFile()).mkdirs();
+        // 删除目录并重新创建文件
+        if (!f.delete()) {
+          ToastUtil.showToast(f.getAbsoluteFile() + "无法删除目录！");
+          return false;
+        }
       }
     } else {
-      // 文件不存在，创建父目录
-      Objects.requireNonNull(f.getParentFile()).mkdirs();
+      if (!Objects.requireNonNull(f.getParentFile()).mkdirs() && !f.getParentFile().exists()) {
+        ToastUtil.showToast(f.getAbsoluteFile() + "无法创建目录！");
+        return false;
+      }
     }
-    boolean success = false;
-    FileWriter fw = null;
-    try {
-      // 使用 FileWriter 写入文件
-      fw = new FileWriter(f);
+    // 写入文件
+    try (FileWriter fw = new FileWriter(f)) { // 使用 try-with-resources 自动关闭流
       fw.write(s);
       fw.flush();
-      success = true;
-    } catch (Throwable t) {
-      // 捕获并记录异常
-      Log.printStackTrace(TAG, t);
-    } finally {
-      // 关闭文件流
-      close(fw);
+      return true;
+    } catch (IOException e) {
+      Log.printStackTrace(TAG, e); // 打印具体的异常信息
+      return false;
     }
-    return success;
   }
+
 
   /**
    * 将字符串追加到文件末尾

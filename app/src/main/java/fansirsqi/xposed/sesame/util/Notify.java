@@ -23,7 +23,6 @@ public class Notify {
   private static String titleText = "";
   private static String contentText = "";
 
-  @SuppressLint("ObsoleteSdkInt")//抑制SdkInt警告
   public static void start(Context context) {
     try {
       Notify.context = context;
@@ -57,7 +56,11 @@ public class Notify {
       }
       Notification mNotification = builder.build();
       if (context instanceof Service) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
+          mNotifyManager.notify(NOTIFICATION_ID, mNotification);
+        }else {
         ((Service) context).startForeground(NOTIFICATION_ID, mNotification);
+        }
       } else {
         mNotifyManager.notify(NOTIFICATION_ID, mNotification);
       }
@@ -182,7 +185,15 @@ public class Notify {
               .setPriority(Notification.PRIORITY_HIGH);
       // 发送新通知
       Notification newNotification = newBuilder.build();
-      notifyManager.notify(newNotificationId, newNotification);
+      if (context instanceof Service) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE){
+          notifyManager.notify(NOTIFICATION_ID, newNotification);
+        }else {
+          ((Service) context).startForeground(NOTIFICATION_ID, newNotification);
+        }
+      } else {
+        notifyManager.notify(NOTIFICATION_ID, newNotification);
+      }
     } catch (Exception e) {
       Log.printStackTrace(e);
     }

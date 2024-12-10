@@ -52,18 +52,18 @@
         <activity
             android:name="fansirsqi.xposed.sesame.ui.ExtendActivity"
             android:resizeableActivity="true"
-            tools:targetApi="n" />
+             />
         <activity
                 android:name="fansirsqi.xposed.sesame.ui.NewSettingsActivity"
                 android:resizeableActivity="true"
-                tools:targetApi="n" />
+                 />
         <activity
                 android:name="fansirsqi.xposed.sesame.ui.SettingsActivity"
                 android:resizeableActivity="true"
-                tools:targetApi="n" />
+                 />
         <activity
                 android:name="fansirsqi.xposed.sesame.ui.HtmlViewerActivity"
                 android:resizeableActivity="true"
-                tools:targetApi="n" />
+                 />
     </application>
 </manifest>

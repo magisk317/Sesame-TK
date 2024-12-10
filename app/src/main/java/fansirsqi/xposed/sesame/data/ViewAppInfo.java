@@ -47,7 +47,7 @@ public final class ViewAppInfo {
       // 此处
       appBuildNumber = String.valueOf(BuildConfig.VERSION_CODE);
       // 设置标题栏-应用名称
-      appTitle = context.getString(R.string.app_name) + "-TK·" + BuildConfig.BUILD_TAG;
+      appTitle = context.getString(R.string.app_name) + "·" + BuildConfig.BUILD_TAG;
       // 设置构建目标信息
       appBuildTarget = BuildConfig.BUILD_DATE + " " + BuildConfig.BUILD_TIME+" ⏰";
       // 设置版本号

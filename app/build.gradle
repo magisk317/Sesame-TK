@@ -11,10 +11,10 @@ android {
         buildConfig = true
     }
     //    版本号组成
-    def major = 1          // 主版本号
-    def minor = 5          // 次版本号
-    def patch = 4          // 补丁版本号
-    def buildTag = "alphafix" // 构建标签 (alpha, beta, release, 等)
+    def major = 0          // 主版本号
+    def minor = 1          // 次版本号
+    def patch = 0          // 补丁版本号
+    def buildTag = "release" // 构建标签 (alpha, beta, release, 等)
     def buildDate
     def buildDate2
     def buildTime
@@ -46,7 +46,7 @@ android {
         buildTime = "unknown"
         buildTime2 = "unknown"
         buildDate2 = "unknown"
-        buildTargetCode = "00000000"
+        buildTargetCode = "0000"
     }
 
     // 使用 Git 提交次数生成版本号
@@ -54,13 +54,14 @@ android {
 
     // 应用版本信息，用于展示在LSP
     if (buildTag == "alpha"||buildTag == "beta") {
-        _versionName = "${buildDate2}.${buildTag}.${buildTime2}" // 版本名称改用好分辨的格式
+        _versionName = "${major}.${minor}.${patch}-${buildTag}"
     }
     else if (buildTag == "alphafix"||buildTag == "betafix") {
-        _versionName = "${buildDate2}.${buildTag}.${buildTime2}.fix" // 版本名称改用好分辨的格式
+        buildTag = buildTag.replace("fix", "")
+        _versionName = "${major}.${minor}.${patch}-${buildTag}.fix"
     }
     else {
-        _versionName = "${major}.${minor}.${patch}.${buildTag}"
+        _versionName = "${major}.${minor}.${patch}-${buildTag}"
         buildTag = ""
     }
 
@@ -68,12 +69,11 @@ android {
     namespace "fansirsqi.xposed.sesame" // 命名空间
     compileSdk 34    // 编译SDK版本
     defaultConfig {
-        minSdk 21 // 最低SDK版本
+        minSdk 26 // 最低SDK版本
         //noinspection OldTargetApi,ExpiredTargetSdkVersion
-        targetSdk 34 // 目标SDK版本
+        targetSdk  34 // 目标SDK版本
         versionCode _versionCode  // 设置版本号
         versionName _versionName  // 设置版本名称 (使用 SemVer 格式)
-
         // 使用 buildConfigField 添加自定义字段 for show ViewInfo.class of BuildConfig.class
         buildConfigField "String", "BUILD_DATE", "\"${buildDate}\"" // 创建常量
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\"" // 创建常量

@@ -217,6 +217,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                             Log.record("应用版本：" + alipayVersion.getVersionString());
                             Log.record("模块版本：" + modelVersion);
                             Log.record("开始执行");
+                            Log.record("[🔥开发者提示！！]只收能量时间段为："+BaseModel.getEnergyTime().getValue()+" \n该时间段内不会执行其他任务..若其他任务无日志，请到设置中自行调整");
                             try {
                               int checkInterval = BaseModel.getCheckInterval().getValue();
                               if (lastExecTime + 2000 > System.currentTimeMillis()) {
@@ -588,8 +589,8 @@ public class ApplicationHook implements IXposedHookLoadPackage {
         StatusUtil.load();
         updateDay();
         BaseModel.initData();
-        Log.record("加载完成");
-        Toast.show("芝麻粒加载成功");
+        Log.record("模块加载完成 🎉");
+        Toast.show("芝麻粒-TK 加载成功🎉");
       }
       offline = false;
       execHandler();
@@ -597,7 +598,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
     } catch (Throwable th) {
       Log.runtime(TAG, "startHandler err:");
       Log.printStackTrace(TAG, th);
-      Toast.show("芝麻粒加载失败");
+      Toast.show("芝麻粒加载失败 🎃");
       return false;
     }
   }
