@@ -26,7 +26,7 @@ public class chouChouLe {
             doubleCheck = false;
             try {
                 JSONObject jo = new JSONObject(AntFarmRpcCall.chouchouleListFarmTask());
-                if (ResUtil.checkResCode(TAG, jo)) {
+                if (ResUtil.checkResultCode(TAG, jo)) {
                     JSONArray farmTaskList = jo.getJSONArray("farmTaskList");
                     for (int i = 0; i < farmTaskList.length(); i++) { // 遍历任务项
                         JSONObject taskItem = farmTaskList.getJSONObject(i);
@@ -60,7 +60,7 @@ public class chouChouLe {
         } while (doubleCheck);
         try {
             JSONObject jo = new JSONObject(AntFarmRpcCall.enterDrawMachine());
-            if (ResUtil.checkResCode(TAG, jo)) {
+            if (ResUtil.checkResultCode(TAG, jo)) {
                 JSONObject userInfo = jo.getJSONObject("userInfo");
                 JSONObject drawActivityInfo = jo.getJSONObject("drawActivityInfo");
                 long endTime = drawActivityInfo.getLong("endTime");
@@ -115,7 +115,7 @@ public class chouChouLe {
         try {
             String s = AntFarmRpcCall.chouchouleReceiveFarmTaskAward(taskId);
             JSONObject jo = new JSONObject(s);
-            return ResUtil.checkResCode(TAG, jo);
+            return ResUtil.checkResultCode(TAG, jo);
         } catch (Throwable t) {
             handleException("receiveFarmTaskAward err:", t);
         }

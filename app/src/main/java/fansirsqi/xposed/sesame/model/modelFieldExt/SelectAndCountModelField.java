@@ -1,18 +1,22 @@
 package fansirsqi.xposed.sesame.model.modelFieldExt;
+
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
 import androidx.core.content.ContextCompat;
-import fansirsqi.xposed.sesame.R;
-import fansirsqi.xposed.sesame.model.ModelField;
-import fansirsqi.xposed.sesame.model.SelectModelFieldFunc;
-import fansirsqi.xposed.sesame.entity.MapperEntity;
-import fansirsqi.xposed.sesame.ui.ListDialog;
+
 import java.util.List;
 import java.util.Map;
+
+import fansirsqi.xposed.sesame.R;
+import fansirsqi.xposed.sesame.entity.MapperEntity;
+import fansirsqi.xposed.sesame.model.ModelField;
+import fansirsqi.xposed.sesame.model.SelectModelFieldFunc;
+import fansirsqi.xposed.sesame.ui.ListDialog;
 /**
  * 数据结构说明
  * Map<String, Integer> 表示已选择的数据与已经设置的数量映射关系
@@ -79,6 +83,7 @@ public class SelectAndCountModelField extends ModelField<Map<String, Integer>> i
     public Boolean contains(String id) {
         return getValue().containsKey(id);
     }
+
     public interface SelectListFunc {
         List<? extends MapperEntity> getList();
     }

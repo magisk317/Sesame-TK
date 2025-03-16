@@ -1,7 +1,10 @@
 package fansirsqi.xposed.sesame.entity;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import fansirsqi.xposed.sesame.util.Maps.IdMapManager;
 import fansirsqi.xposed.sesame.util.Maps.VitalityRewardsMap;
 import lombok.Getter;
@@ -12,6 +15,7 @@ import lombok.Getter;
  * @apiNote
  */
 public class VitalityStore extends MapperEntity {
+    private static Map<String, String> idNameMap;
     public VitalityStore(String i, String n) {
         this.id = i;
         this.name = n;
@@ -23,6 +27,17 @@ public class VitalityStore extends MapperEntity {
             list.add(new VitalityStore(entry.getKey(), entry.getValue()));
         }
         return list;
+    }
+
+    public static String getNameById(String id) {
+        if (idNameMap == null) {
+            idNameMap = new HashMap<>();
+            for (VitalityStore store : getList()) {
+                idNameMap.put(store.id, store.name);
+            }
+        }
+        // 直接 get，若 key 不存在会返回 null
+        return idNameMap.get(id);
     }
 
     @Getter

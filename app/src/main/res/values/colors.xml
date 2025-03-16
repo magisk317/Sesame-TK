@@ -7,8 +7,8 @@
     <color name="main_button_text">#290C4C</color>
     <color name="dashboard_item_1">#854bee</color>
     <color name="dashboard_item_2">#5351FC</color>
-    <color name="dashboard_item_3">#E64000</color>
-    <color name="dashboard_item_4">#F6B900</color>
+    <color name="item_selected_orange">#E64000</color>
+    <color name="item_selected_banana">#F6B900</color>
 
     <color name="textColorRed">#e10000</color>
     <color name="textColorGreen">#0F960F</color>

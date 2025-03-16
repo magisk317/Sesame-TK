@@ -125,7 +125,7 @@ public class Vitality {
                     Log.record("活力兑换🍃[" + skuName + "]停止:" + Status.getNickName());
                     if (ExchangeStatus.REACH_LIMIT.name().equals(itemStatus)) {
                         fansirsqi.xposed.sesame.data.Status.setFlagToday("forest::VitalityExchangeLimit::" + skuId);
-                        Log.forest("活力兑换🍃[" + skuName + "]已达设置上限,停止兑换！");
+                        Log.forest("活力兑换🍃[" + skuName + "]已达上限,停止兑换！");
                     }
                     return false;
                 }
@@ -161,7 +161,7 @@ public class Vitality {
     private static Boolean VitalityExchange(String spuId, String skuId) {
         try {
             JSONObject jo = new JSONObject(AntForestRpcCall.exchangeBenefit(spuId, skuId));
-            return ResUtil.checkResCode(TAG, jo);
+            return ResUtil.checkResultCode(TAG, jo);
         } catch (Throwable th) {
             Log.runtime(TAG, "VitalityExchange err:" + spuId + "," + skuId);
             Log.printStackTrace(TAG, th);

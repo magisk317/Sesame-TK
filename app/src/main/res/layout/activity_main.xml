@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -37,7 +38,8 @@
             android:gravity="center"
             android:onClick="onClick"
             android:scaleType="centerInside"
-            app:srcCompat="@drawable/main" />
+            app:srcCompat="@drawable/main"
+            tools:ignore="UsingOnClickInXml,ImageContrastCheck,ImageContrastCheck" />
 
         <TextView
             android:id="@+id/one_word"
@@ -46,11 +48,12 @@
             android:layout_marginBottom="35sp"
             android:fontFamily=""
             android:gravity="center"
+            android:onClick="onClick"
             android:text="@string/text_api"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#5A5A5A"
-
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            tools:ignore="UsingOnClickInXml,TouchTargetSizeCheck" />
 
         <TextView
             android:id="@+id/bulid_target"
@@ -76,7 +79,8 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#FF5722"
             android:textSize="12sp"
-            android:typeface="sans" />
+            android:typeface="sans"
+            tools:ignore="TextContrastCheck" />
 
 
 
@@ -108,7 +112,8 @@
                 android:text="@string/forest_log"
                 android:textAlignment="gravity"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
 
             <Button
                 android:id="@+id/btn_farm_log"
@@ -128,7 +133,8 @@
                 android:text="@string/farm_log"
                 android:textAlignment="gravity"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
 
             <Button
                 android:id="@+id/btn_other_log"
@@ -148,7 +154,8 @@
                 android:text="@string/other_log"
                 android:textAlignment="gravity"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
         </LinearLayout>
 
         <LinearLayout
@@ -180,7 +187,8 @@
                 android:textAlignment="gravity"
                 android:textAllCaps="false"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
 
             <Button
                 android:id="@+id/btn_github"
@@ -201,7 +209,8 @@
                 android:textAlignment="gravity"
                 android:textAllCaps="false"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
 
             <Button
                 android:id="@+id/btn_settings"
@@ -222,7 +231,8 @@
                 android:textAlignment="gravity"
                 android:textAllCaps="false"
                 android:textColor="@color/main_button_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                tools:ignore="UsingOnClickInXml" />
         </LinearLayout>
 
     </LinearLayout>

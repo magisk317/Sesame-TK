@@ -64,8 +64,7 @@ public class DataCache {
     }
 
     public static Boolean clearGuangPanPhoto() {
-        DataCache cache = INSTANCE;
-        cache.photoGuangPanCacheSet.clear();
+        INSTANCE.photoGuangPanCacheSet.clear();
         return save();
     }
 
@@ -87,7 +86,7 @@ public class DataCache {
         return Files.write2File(JsonUtil.formatJson(INSTANCE), Files.getTargetFileofDir(Files.MAIN_DIR, fileName));
     }
 
-    private static synchronized DataCache load() {
+    public static synchronized DataCache load() {
         File targetFile = Files.getTargetFileofDir(Files.MAIN_DIR, fileName);
         try {
             if (targetFile.exists()) {

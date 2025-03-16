@@ -62,10 +62,10 @@ public class AntOrchard extends ModelTask {
   @Override
   public Boolean check() {
     if (TaskCommon.IS_ENERGY_TIME){
-      Log.record("⏰ 当前为只收能量时间【"+ BaseModel.getEnergyTime().getValue() +"】，停止执行" + getName() + "任务！");
+      Log.record("⏸ 当前为只收能量时间【"+ BaseModel.getEnergyTime().getValue() +"】，停止执行" + getName() + "任务！");
       return false;
     }else if (TaskCommon.IS_MODULE_SLEEP_TIME) {
-      Log.record("⏰ 模块休眠时间【"+ BaseModel.getModelSleepTime().getValue() +"】停止执行" + getName() + "任务！");
+      Log.record("💤 模块休眠时间【"+ BaseModel.getModelSleepTime().getValue() +"】停止执行" + getName() + "任务！");
       return false;
     } else {
       return true;

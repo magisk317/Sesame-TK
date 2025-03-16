@@ -17,7 +17,7 @@ public class GreenLife {
                         data = jo.getJSONObject("data");
                         if (data.optBoolean("canSendEnergy", false)) {
                             int receivedEnergyAmount = data.getInt("receivedEnergyAmount");
-                            Log.forest("集市逛街👀[获得:能量" + receivedEnergyAmount + "g]");
+                            Log.forest("集市逛街🛍[获得:能量" + receivedEnergyAmount + "g]");
                         }
                     }
                 }

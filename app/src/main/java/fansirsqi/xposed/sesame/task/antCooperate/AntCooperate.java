@@ -60,10 +60,10 @@ public class AntCooperate extends ModelTask {
     @Override
     public Boolean check() {
         if (TaskCommon.IS_ENERGY_TIME) {
-            Log.record("⏰ 当前为只收能量时间【" + BaseModel.getEnergyTime().getValue() + "】，停止执行" + getName() + "任务！");
+            Log.record("⏸ 当前为只收能量时间【" + BaseModel.getEnergyTime().getValue() + "】，停止执行" + getName() + "任务！");
             return false;
         } else if (TaskCommon.IS_MODULE_SLEEP_TIME) {
-            Log.record("⏰ 模块休眠时间【" + BaseModel.getModelSleepTime().getValue() + "】停止执行" + getName() + "任务！");
+            Log.record("💤 模块休眠时间【" + BaseModel.getModelSleepTime().getValue() + "】停止执行" + getName() + "任务！");
             return false;
         } else {
             return true;
@@ -83,7 +83,7 @@ public class AntCooperate extends ModelTask {
                     s = AntCooperateRpcCall.queryUserCooperatePlantList();
                 }
                 JSONObject jo = new JSONObject(s);
-                if (ResUtil.checkResCode(jo)) {
+                if (ResUtil.checkResultCode(jo)) {
                     Log.runtime(TAG, "获取合种列表成功");
                     int userCurrentEnergy = jo.getInt("userCurrentEnergy");
                     JSONArray ja = jo.getJSONArray("cooperatePlants");
@@ -147,7 +147,7 @@ public class AntCooperate extends ModelTask {
         try {
             String s = AntCooperateRpcCall.cooperateWater(AntCooperate.UserId, coopId, count);
             JSONObject jo = new JSONObject(s);
-            if (ResUtil.checkResCode(jo)) {
+            if (ResUtil.checkResultCode(jo)) {
                 Log.forest("合种浇水🚿[" + name + "]" + jo.getString("barrageText"));
                 Status.cooperateWaterToday(UserId, coopId);
             } else {
@@ -195,7 +195,7 @@ public class AntCooperate extends ModelTask {
             }
             TimeUtil.sleep(500);
             JSONObject jo = new JSONObject(AntCooperateRpcCall.queryCooperateRank("D", cooperationId));
-            if (ResUtil.checkResCode(TAG, jo)) {
+            if (ResUtil.checkResultCode(TAG, jo)) {
                 JSONArray cooperateRankInfos = jo.getJSONArray("cooperateRankInfos");
                 for (int i = 0; i < cooperateRankInfos.length(); i++) {
                     JSONObject rankInfo = cooperateRankInfos.getJSONObject(i);

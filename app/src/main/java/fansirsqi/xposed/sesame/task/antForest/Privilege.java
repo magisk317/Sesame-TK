@@ -1,184 +1,188 @@
 package fansirsqi.xposed.sesame.task.antForest;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import fansirsqi.xposed.sesame.data.Status;
 import fansirsqi.xposed.sesame.util.Log;
+import fansirsqi.xposed.sesame.data.Status;
 
 public class Privilege {
-    public static final String TAG = Privilege.class.getSimpleName();
-    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
-    private static final List<List<String>> YOUTH_PRIVILEGE_TASKS = Arrays.asList(
+    private static final String TAG = Privilege.class.getSimpleName();
+    private static final String YOUTH_PRIVILEGE_PREFIX = "青春特权🌸";
+    private static final String STUDENT_SIGN_PREFIX = "青春特权🧧";
+
+    // 任务状态常量
+    private static final String TASK_RECEIVED = "RECEIVED";
+    private static final String TASK_FINISHED = "FINISHED";
+    private static final String RPC_SUCCESS = "SUCCESS";
+
+    // 签到时间常量
+    private static final int SIGN_IN_START_HOUR = 5;
+    private static final int SIGN_IN_END_HOUR = 10;
+
+    // 青春特权任务配置
+    private static final List<List<String>> YOUTH_TASKS = Arrays.asList(
             Arrays.asList("DNHZ_SL_college", "DAXUESHENG_SJK", "双击卡"),
             Arrays.asList("DXS_BHZ", "NENGLIANGZHAO_20230807", "保护罩"),
             Arrays.asList("DXS_JSQ", "JIASUQI_20230808", "加速器")
     );
 
-    static boolean youthPrivilege() {
+    public static boolean youthPrivilege() {
         try {
             if (!Status.canYouthPrivilegeToday()) return false;
 
-            boolean allSuccessful = true;
-            for (List<String> task : YOUTH_PRIVILEGE_TASKS) {
-                String queryParam = task.get(0);
-                String receiveParam = task.get(1);
-                String taskName = task.get(2);
+            List<String> processResults = new ArrayList<>();
+            for (List<String> task : YOUTH_TASKS) {
+                processResults.addAll(processYouthPrivilegeTask(task));
+            }
 
-                JsonNode queryResult = JSON_MAPPER.readTree(AntForestRpcCall.queryTaskListV2(queryParam));
-
-                JsonNode taskInfoListNode = getNestedNode(queryResult, "forestTasksNew", "0", "taskInfoList");
-                if (taskInfoListNode == null) {
-                    Log.forest("青春特权🌸[" + taskName + "]任务列表未找到");
-                    allSuccessful = false;
-                    continue;
-                }
-
-                ArrayNode taskInfoList = (ArrayNode) taskInfoListNode;
-                for (JsonNode taskInfo : taskInfoList) {
-                    if (!handlePrivilegeTask(taskInfo, receiveParam, taskName)) {
-                        allSuccessful = false;
-                    }
+            boolean allSuccess = true;
+            for (String result : processResults) {
+                if (!"处理成功".equals(result)) {
+                    allSuccess = false;
+                    break;
                 }
             }
 
-            if (allSuccessful) {
-                Status.setYouthPrivilegeToday();
-                return true;
-            } else {
-                return false;
-            }
+            if (allSuccess) Status.setYouthPrivilegeToday();
+            return allSuccess;
         } catch (Exception e) {
-            Log.runtime(AntForest.TAG, "youthPrivilege err:");
-            Log.printStackTrace(AntForest.TAG, e);
+            Log.printStackTrace(TAG + "青春特权领取异常", e);
             return false;
         }
     }
 
-    private static boolean handlePrivilegeTask(JsonNode taskInfo, String receiveParam, String taskName) {
-        JsonNode taskBaseInfo = taskInfo.get("taskBaseInfo");
-        if (taskBaseInfo == null) return false;
 
-        String taskType = taskBaseInfo.get("taskType").asText();
-        if (!taskType.equals(receiveParam)) return true;
+    private static List<String> processYouthPrivilegeTask(List<String> taskConfig) throws JSONException {
+        String queryParam = taskConfig.get(0);
+        String receiveParam = taskConfig.get(1);
+        String taskName = taskConfig.get(2);
 
-        String taskStatus = taskBaseInfo.get("taskStatus").asText();
-        if ("RECEIVED".equals(taskStatus)) {
-            Log.forest("青春特权🌸[" + taskName + "]已领取");
-        } else if ("FINISHED".equals(taskStatus)) {
-            try {
-                JsonNode receiveResult = JSON_MAPPER.readTree(AntForestRpcCall.receiveTaskAwardV2(receiveParam));
-                String resultDesc = receiveResult.get("desc").asText();
-                Log.forest("青春特权🌸[" + taskName + "]领取结果：" + resultDesc);
-                return "处理成功".equals(resultDesc);
-            } catch (Exception e) {
-                Log.error("青春特权🌸[" + taskName + "]领取异常：" + e.getMessage());
-                return false;
-            }
-        }
-        return false;
+        JSONArray taskList = getTaskList(queryParam);
+        return handleTaskList(taskList, receiveParam, taskName);
     }
 
-    static void studentSignInRedEnvelope() {
-        try {
-            Calendar calendar = Calendar.getInstance();
-            int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
-            final int START_HOUR = 5;
-            final int END_HOUR = 10;
-
-            if (currentHour < START_HOUR) {
-                Log.forest("青春特权🧧5点前不执行签到");
-                return;
-            }
-
-            String tag = currentHour < END_HOUR ? "double" : "single";
-            studentTaskHandle(tag);
-        } catch (Exception e) {
-            Log.runtime(TAG, "student SignInRedEnvelope错误:");
-            Log.printStackTrace(TAG, e);
-        }
+    private static JSONArray getTaskList(String queryParam) throws JSONException {
+        String response = AntForestRpcCall.queryTaskListV2(queryParam);
+        JSONObject result = new JSONObject(response);
+        return result.getJSONArray("forestTasksNew")
+                .getJSONObject(0)
+                .getJSONArray("taskInfoList");
     }
 
-    static void studentTask(String tag) {
-        try {
-            String result = AntForestRpcCall.studentCheckin();
-            if (result == null || result.isEmpty()) {
-                Log.record("青春特权🧧签到失败：返回数据为空");
-                return;
-            }
+    private static List<String> handleTaskList(JSONArray taskInfoList, String taskType, String taskName) {
+        List<String> results = new ArrayList<>();
+        for (int i = 0; i < taskInfoList.length(); i++) {
+            JSONObject task = taskInfoList.optJSONObject(i);
+            if (task == null) continue;
 
-            JsonNode resultJson = JSON_MAPPER.readTree(result);
-            String resultCode = resultJson.get("resultCode").asText();
-            if (!"SUCCESS".equals(resultCode)) {
-                String resultDesc = resultJson.get("resultDesc").asText("未知错误");
-                Log.forest("青春特权🧧签到失败: " + resultDesc);
-                return;
-            }
+            JSONObject baseInfo = task.optJSONObject("taskBaseInfo");
+            if (baseInfo == null) continue;
 
-            String resultDesc = resultJson.get("resultDesc").asText("签到成功");
-            Log.forest("青春特权🧧" + tag + "：" + resultDesc);
-            Status.setStudentTaskToday();
-        } catch (Exception e) {
-            Log.runtime(TAG, "studentTask 异常: " + e.getMessage());
-            Log.printStackTrace(TAG, e);
+            String currentTaskType = baseInfo.optString("taskType");
+            if (!taskType.equals(currentTaskType)) continue;
+
+            processSingleTask(baseInfo, taskType, taskName, results);
+        }
+        return results;
+    }
+
+    private static void processSingleTask(JSONObject baseInfo, String taskType, String taskName, List<String> results) {
+        String taskStatus = baseInfo.optString("taskStatus");
+        if (TASK_RECEIVED.equals(taskStatus)) {
+            Log.forest(YOUTH_PRIVILEGE_PREFIX + "[%s]已领取", taskName);
+            return;
+        }
+
+        if (TASK_FINISHED.equals(taskStatus)) {
+            handleFinishedTask(taskType, taskName, results);
         }
     }
 
-    private static void studentTaskHandle(String tag) {
+    private static void handleFinishedTask(String taskType, String taskName, List<String> results) {
         try {
+            JSONObject response = new JSONObject(AntForestRpcCall.receiveTaskAwardV2(taskType));
+            String resultDesc = response.optString("desc");
+            results.add(resultDesc);
+            String logMessage = "处理成功".equals(resultDesc) ? "领取成功" : "领取结果：" + resultDesc;
+            Log.forest(YOUTH_PRIVILEGE_PREFIX + "["+taskName+"]" + logMessage);
+        } catch (JSONException e) {
+            Log.printStackTrace(TAG + "奖励领取结果解析失败", e);
+            results.add("处理异常");
+        }
+    }
+
+    public static void studentSignInRedEnvelope() {
+        try {
+            if (!isSignInTimeValid()) {
+                Log.record(STUDENT_SIGN_PREFIX + "5点前不执行签到");
+                return;
+            }
+
             if (!Status.canStudentTask()) {
-                Log.record("青春特权🧧今日已达上限");
+                Log.record(STUDENT_SIGN_PREFIX + "今日已完成签到");
                 return;
             }
 
-            String response = AntForestRpcCall.studentQqueryCheckInModel();
-            if (response == null || response.isEmpty()) {
-                Log.record("青春特权🧧查询失败：返回数据为空");
-                return;
-            }
-
-            JsonNode responseJson = JSON_MAPPER.readTree(response);
-            String resultCode = responseJson.get("resultCode").asText("");
-            if (!"SUCCESS".equals(resultCode)) {
-                Log.record("青春特权🧧查询失败: " + responseJson.get("resultDesc").asText(""));
-                return;
-            }
-
-            JsonNode studentCheckInInfo = responseJson.get("studentCheckInInfo");
-            if (studentCheckInInfo == null) {
-                Log.record("青春特权🧧查询失败：无签到信息");
-                return;
-            }
-
-            String action = studentCheckInInfo.get("action").asText("");
-            if (action.isEmpty()) {
-                Log.record("青春特权🧧查询失败：无操作信息");
-                return;
-            }
-
-            if ("DO_TASK".equals(action)) {
-                Log.record("青春特权🧧今日已签到");
-                Status.setStudentTaskToday();
-            } else {
-                studentTask(tag);
-            }
+            processStudentSignIn();
         } catch (Exception e) {
-            Log.runtime(TAG, "student TaskHandle 异常: " + e.getMessage());
-            Log.printStackTrace(TAG, e);
+            Log.printStackTrace(TAG + "学生签到异常", e);
         }
     }
 
-    private static JsonNode getNestedNode(JsonNode root, String... paths) {
-        JsonNode node = root;
-        for (String path : paths) {
-            node = node.get(path);
-            if (node == null) break;
+    private static boolean isSignInTimeValid() {
+        int currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        return currentHour >= SIGN_IN_START_HOUR;
+    }
+
+    private static void processStudentSignIn() throws JSONException {
+        String response = AntForestRpcCall.studentQqueryCheckInModel();
+        JSONObject result = new JSONObject(response);
+
+        if (!RPC_SUCCESS.equals(result.optString("resultCode"))) {
+            Log.record(STUDENT_SIGN_PREFIX + "查询失败：" + result.optString("resultDesc"));
+            return;
         }
-        return node;
+
+        JSONObject checkInInfo = result.optJSONObject("studentCheckInInfo");
+        if (checkInInfo == null || "DO_TASK".equals(checkInInfo.optString("action"))) {
+            Status.setStudentTaskToday();
+            return;
+        }
+
+        executeStudentSignIn();
+    }
+
+    private static void executeStudentSignIn() {
+        try {
+            String tag = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) < SIGN_IN_END_HOUR
+                    ? "double" : "single";
+
+            JSONObject result = new JSONObject(AntForestRpcCall.studentCheckin());
+            handleSignInResult(result, tag);
+        } catch (JSONException e) {
+            Log.printStackTrace(TAG + "签到结果解析失败", e);
+        }
+    }
+
+    private static void handleSignInResult(JSONObject result, String tag) {
+        String resultCode = result.optString("resultCode");
+        String resultDesc = result.optString("resultDesc", "签到成功");
+
+        if (RPC_SUCCESS.equals(resultCode)) {
+            Status.setStudentTaskToday();
+            String logMessage = STUDENT_SIGN_PREFIX + tag + resultDesc;
+            Log.forest(logMessage);
+        } else {
+            String errorMsg = resultDesc.contains("不匹配") ? resultDesc + "可能账户不符合条件" : resultDesc;
+            String logMessage = STUDENT_SIGN_PREFIX + tag + "失败：" + errorMsg;
+            Log.error(TAG, logMessage);
+        }
     }
 }

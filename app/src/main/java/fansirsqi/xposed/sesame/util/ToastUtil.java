@@ -48,16 +48,23 @@ public class ToastUtil {
      */
     public static void showToast(Context context, String message) {
         Log.runtime("try showToast: " + message);
-        Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        @SuppressLint("InflateParams")
-        View layout = inflater.inflate(R.layout.toast, null);
-        // 设置自定义文字内容
-        TextView toastText = layout.findViewById(R.id.toast_text);
-        toastText.setText(message);
-        toast.setView(layout);
-        toast.setGravity(toast.getGravity(), toast.getXOffset(), BaseModel.getToastOffsetY().getValue());
-        toast.show();
+        try {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            @SuppressLint("InflateParams")
+            View layout = inflater.inflate(R.layout.toast, null);
+            TextView toastText = layout.findViewById(R.id.toast_text);
+            toastText.setText(message);
+            
+            Toast toast = new Toast(context);
+            toast.setDuration(Toast.LENGTH_SHORT);
+            toast.setGravity(toast.getGravity(), toast.getXOffset(), BaseModel.getToastOffsetY().getValue());
+            toast.setView(layout);
+            toast.show();
+        } catch (Exception e) {
+            Log.printStackTrace(e);
+            // 回退到原生Toast
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+        }
     }
     /**
      * 创建自定义 Toast
@@ -79,31 +86,27 @@ public class ToastUtil {
      */
     public static Toast makeText(Context context, String message, int duration) {
         try {
-            Log.runtime("makeText Context: " + context.getClass().getSimpleName());
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             @SuppressLint("InflateParams")
             View layout = inflater.inflate(R.layout.toast, null);
             TextView toastText = layout.findViewById(R.id.toast_text);
             toastText.setText(message);
+            
             Toast toast = new Toast(context);
-            toast.setView(layout);
             toast.setDuration(duration);
             toast.setGravity(toast.getGravity(), toast.getXOffset(), BaseModel.getToastOffsetY().getValue());
+            toast.setView(layout);
             return toast;
         } catch (Exception e) {
             Log.printStackTrace(e);
-            // 回退到原生 Toast
+            // 回退到原生Toast
             return Toast.makeText(context, message, duration);
         }
     }
     public static void showToastWithDelay(Context context, String message, int delayMillis) {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            makeText(context, message, Toast.LENGTH_SHORT).show();
-        }, delayMillis);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> makeText(context, message, Toast.LENGTH_SHORT).show(), delayMillis);
     }
     public static void showToastWithDelay(String message, int delayMillis) {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            makeText(message, Toast.LENGTH_SHORT).show();
-        }, delayMillis);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> makeText(message, Toast.LENGTH_SHORT).show(), delayMillis);
     }
 }

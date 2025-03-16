@@ -15,13 +15,11 @@ import java.util.regex.Pattern;
 import fansirsqi.xposed.sesame.data.DataCache;
 import fansirsqi.xposed.sesame.data.Status;
 import fansirsqi.xposed.sesame.hook.Toast;
-import fansirsqi.xposed.sesame.model.modelFieldExt.TextModelField;
 import fansirsqi.xposed.sesame.util.JsonUtil;
 import fansirsqi.xposed.sesame.util.Log;
 import fansirsqi.xposed.sesame.util.ResUtil;
 import fansirsqi.xposed.sesame.util.StringUtil;
 import fansirsqi.xposed.sesame.util.ThreadUtil;
-import fansirsqi.xposed.sesame.util.ToastUtil;
 
 public class EcoLife {
     public static final String TAG = EcoLife.class.getSimpleName();
@@ -120,7 +118,7 @@ public class EcoLife {
                     if ("photoguangpan".equals(actionId)) continue;
                     ThreadUtil.sleep(300);
                     JSONObject jo = new JSONObject(AntForestRpcCall.ecolifeTick(actionId, dayPoint, source));
-                    if (ResUtil.checkResCode(jo)) {
+                    if (ResUtil.checkResultCode(jo)) {
                         Log.forest("绿色打卡🍀[" + actionName + "]"); // 成功打卡日志
                     } else {
                         // 记录失败原因

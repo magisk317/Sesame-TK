@@ -1,7 +1,5 @@
 package fansirsqi.xposed.sesame.ui;
 
-import static fansirsqi.xposed.sesame.data.ViewAppInfo.isApkInDebug;
-
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -22,15 +20,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Consumer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import fansirsqi.xposed.sesame.R;
 import fansirsqi.xposed.sesame.data.RunType;
+import fansirsqi.xposed.sesame.data.Statistics;
 import fansirsqi.xposed.sesame.data.UIConfig;
 import fansirsqi.xposed.sesame.data.ViewAppInfo;
 import fansirsqi.xposed.sesame.entity.FriendWatch;
@@ -41,7 +41,6 @@ import fansirsqi.xposed.sesame.util.Files;
 import fansirsqi.xposed.sesame.util.Log;
 import fansirsqi.xposed.sesame.util.Maps.UserMap;
 import fansirsqi.xposed.sesame.util.PermissionUtil;
-import fansirsqi.xposed.sesame.data.Statistics;
 import fansirsqi.xposed.sesame.util.ThreadUtil;
 import fansirsqi.xposed.sesame.util.ToastUtil;
 
@@ -53,7 +52,7 @@ public class MainActivity extends BaseActivity {
     private Runnable titleRunner;
     private String[] userNameArray = {"默认"};
     private UserEntity[] userEntityArray = {null};
-    private String userId = null;
+    private TextView oneWord = null;
 
     @SuppressLint({"UnspecifiedRegisterReceiverFlag", "SetTextI18n"})
     @Override
@@ -71,13 +70,12 @@ public class MainActivity extends BaseActivity {
         tvStatistics = findViewById(R.id.tv_statistics);
         TextView buildVersion = findViewById(R.id.bulid_version);
         TextView buildTarget = findViewById(R.id.bulid_target);
-        TextView oneWord = findViewById(R.id.one_word);
+        oneWord = findViewById(R.id.one_word);
         // 获取并设置一言句子
         ViewAppInfo.checkRunType();
         updateSubTitle(ViewAppInfo.getRunType());
 //        viewHandler = new Handler(Looper.getMainLooper());
         titleRunner = () -> updateSubTitle(RunType.DISABLE);
-        userId = UserMap.getCurrentUid();
         if (mainImage != null) {
             mainImage.setOnLongClickListener(
                     v -> {
@@ -108,21 +106,8 @@ public class MainActivity extends BaseActivity {
                                     }
                                     viewHandler.removeCallbacks(titleRunner);
                                     if (isClick) {
-                                        // 调用 FansirsqiUtil 获取句子
-                                        FansirsqiUtil.getOneWord(
-                                                new FansirsqiUtil.OneWordCallback() {
-                                                    @Override
-                                                    public void onSuccess(String result) {
-                                                        runOnUiThread(() -> updateOneWord(result, oneWord)); // 在主线程中更新UI
-                                                    }
 
-                                                    @Override
-                                                    public void onFailure(String error) {
-                                                        runOnUiThread(() -> updateOneWord(error, oneWord)); // 在主线程中更新UI
-                                                    }
-                                                });
-                                        Log.debug("Now User Id: " + userId);
-                                        Toast.makeText(context, "芝麻粒状态加载正常👌", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(context, "😄 一切看起来都很好！", Toast.LENGTH_SHORT).show();
                                         ThreadUtil.sleep(200); // 别急，等一会儿再说
                                         isClick = false;
                                     }
@@ -217,7 +202,7 @@ public class MainActivity extends BaseActivity {
             }
             try {
                 Statistics.load();
-                Statistics.updateDay();
+                Statistics.updateDay(Calendar.getInstance());
                 tvStatistics.setText(Statistics.getText());
             } catch (Exception e) {
                 Log.printStackTrace(e);
@@ -248,17 +233,53 @@ public class MainActivity extends BaseActivity {
         } else if (id == R.id.btn_github) {
             data = "https://github.com/Fansirsqi/Sesame-TK";
         } else if (id == R.id.btn_settings) {
-            selectSettingUid();
+//            selectSettingUid();
+            showSelectionDialog(
+                    "📌 请选择配置",
+                    userNameArray,
+                    this::goSettingActivity,
+                    "😡 老子就不选",
+                    () -> {},
+                    true
+            );
             return;
         } else if (id == R.id.btn_friend_watch) {
-            selectFriendWatchUid();
-//            ListDialog.show(this, getString(R.string.friend_watch), FriendWatch.getList(userId), SelectModelFieldFunc.newMapInstance(), false, ListDialog.ListType.SHOW);
+//            selectFriendWatchUid();
 
+            // 调用 goFrinedWatch 时不展示默认选项
+            showSelectionDialog(
+                    "🤣 请选择有效账户[别选默认]",
+                    userNameArray,
+                    this::goFrinedWatch,
+                    "😡 老子不选了，滚",
+                    () -> {},
+                    false
+            );
+
+
+            return;
+        } else if (id == R.id.one_word) {
+            ToastUtil.showToastWithDelay(this, "😡 正在获取句子，请稍后……", 800);
+            ThreadUtil.sleep(5000);
+            FansirsqiUtil.getOneWord(
+                    new FansirsqiUtil.OneWordCallback() {
+                        @Override
+                        public void onSuccess(String result) {
+                            runOnUiThread(() -> updateOneWord(result, oneWord)); // 在主线程中更新UI
+                        }
+
+                        @Override
+                        public void onFailure(String error) {
+                            runOnUiThread(() -> updateOneWord(error, oneWord)); // 在主线程中更新UI
+                        }
+                    });
             return;
         }
         Intent it = new Intent(this, HtmlViewerActivity.class);
         it.setData(Uri.parse(data));
         startActivity(it);
+
+
     }
 
     @Override
@@ -277,9 +298,7 @@ public class MainActivity extends BaseActivity {
             menu.add(0, 7, 7, R.string.view_capture);
             menu.add(0, 8, 8, R.string.extend);
             menu.add(0, 9, 9, R.string.settings);
-            if (isApkInDebug()) {
-                menu.add(0, 10, 10, "Demo Setting UI");
-            }
+                menu.add(0, 10, 10, "🧹 清空配置");
         } catch (Exception e) {
             Log.printStackTrace(e);
             ToastUtil.makeText(this, "菜单创建失败，请重试", Toast.LENGTH_SHORT).show();
@@ -354,9 +373,20 @@ public class MainActivity extends BaseActivity {
                 selectSettingUid();
                 break;
             case 10:
-                Intent it = new Intent(this, DemoSettingActivity.class);
-                it.putExtra("userName", userNameArray[0]);
-                startActivity(it);
+                new AlertDialog.Builder(this)
+                        .setTitle("⚠️ 警告")
+                        .setMessage("🤔 确认清除所有模块配置？")
+                        .setPositiveButton(R.string.ok, (dialog, id) -> {
+                            if (Files.delFile(Files.CONFIG_DIR)) {
+                                Toast.makeText(this, "🙂 清空配置成功", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(this, "😭 清空配置失败", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss())
+                        .create()
+                        .show();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -365,7 +395,7 @@ public class MainActivity extends BaseActivity {
         final CountDownLatch latch = new CountDownLatch(1);
         AlertDialog dialog = StringDialog.showSelectionDialog(
                 this,
-                "请选择配置",
+                "📌 请选择配置",
                 userNameArray,
                 (dialog1, which) -> {
                     goSettingActivity(which);
@@ -403,7 +433,7 @@ public class MainActivity extends BaseActivity {
         final CountDownLatch latch = new CountDownLatch(1);
         AlertDialog dialog = StringDialog.showSelectionDialog(
                 this,
-                "请选择有效账户",
+                "🤣 请选择有效账户[别选默认]",
                 userNameArray,
                 (dialog1, which) -> {
                     goFrinedWatch(which);
@@ -437,12 +467,56 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    public void showSelectionDialog(String title, String[] options,
+                                    Consumer<Integer> onItemSelected,
+                                    String negativeButtonText,
+                                    Runnable onNegativeButtonClick,
+                                    boolean showDefaultOption) {
+        final CountDownLatch latch = new CountDownLatch(1);
+        AlertDialog dialog = StringDialog.showSelectionDialog(
+                this,
+                title,
+                options,
+                (dialog1, which) -> {
+                    onItemSelected.accept(which);
+                    dialog1.dismiss();
+                    latch.countDown();
+                },
+                negativeButtonText,
+                dialog1 -> {
+                    onNegativeButtonClick.run();
+                    dialog1.dismiss();
+                    latch.countDown();
+                });
+
+        int length = options.length;
+        if (showDefaultOption && length > 0 && length < 3) {
+            // 定义超时时间（单位：毫秒）
+            final long timeoutMillis = 800;
+            new Thread(() -> {
+                try {
+                    if (!latch.await(timeoutMillis, TimeUnit.MILLISECONDS)) {
+                        runOnUiThread(() -> {
+                            if (dialog.isShowing()) {
+                                onItemSelected.accept(length - 1);
+                                dialog.dismiss();
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+        }
+    }
+
+
     private void goFrinedWatch(int index) {
         UserEntity userEntity = userEntityArray[index];
         if (userEntity != null) {
             ListDialog.show(this, getString(R.string.friend_watch), FriendWatch.getList(userEntity.getUserId()), SelectModelFieldFunc.newMapInstance(), false, ListDialog.ListType.SHOW);
         } else {
-            ToastUtil.makeText(this, "请先选择有效用户", Toast.LENGTH_SHORT).show();
+            ToastUtil.makeText(this, "😡 别他妈选默认！！！！！！！！", Toast.LENGTH_LONG).show();
         }
     }
 

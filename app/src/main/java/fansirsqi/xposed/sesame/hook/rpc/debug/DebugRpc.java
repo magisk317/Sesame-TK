@@ -66,7 +66,7 @@ public class DebugRpc {
         try {
             String s = ReserveRpcCall.queryTreeItemsForExchange();
             JSONObject jo = new JSONObject(s);
-            if (ResUtil.checkResCode(jo)) {
+            if (ResUtil.checkResultCode(jo)) {
                 JSONArray ja = jo.getJSONArray("treeItems");
                 for (int i = 0; i < ja.length(); i++) {
                     jo = ja.getJSONObject(i);
@@ -95,7 +95,7 @@ public class DebugRpc {
             String response = ReserveRpcCall.queryTreeForExchange(projectId);
             JSONObject jo = new JSONObject(response);
             // 检查RPC调用结果码是否为"SUCCESS"，表示成功
-            if (ResUtil.checkResCode(jo)) {
+            if (ResUtil.checkResultCode(jo)) {
                 // 获取可交换树木的信息
                 JSONObject exchangeableTree = jo.getJSONObject("exchangeableTree");
                 // 获取当前预算
@@ -138,7 +138,7 @@ public class DebugRpc {
             String response = ReserveRpcCall.queryTreeItemsForExchange();
             JSONObject jo = new JSONObject(response);
             // 检查RPC调用结果码是否为"SUCCESS"，表示成功
-            if (ResUtil.checkResCode(jo)) {
+            if (ResUtil.checkResultCode(jo)) {
                 // 获取树木项目列表
                 JSONArray ja = jo.getJSONArray("treeItems");
                 // 遍历项目列表
@@ -183,7 +183,7 @@ public class DebugRpc {
             String response = ReserveRpcCall.queryTreeForExchange(projectId);
             JSONObject jo = new JSONObject(response);
             // 检查RPC调用结果码是否为"SUCCESS"，表示成功
-            if (ResUtil.checkResCode(jo)) {
+            if (ResUtil.checkResultCode(jo)) {
                 // 获取可交换树木的信息
                 JSONObject exchangeableTree = jo.getJSONObject("exchangeableTree");
                 // 获取当前预算
@@ -278,7 +278,7 @@ public class DebugRpc {
     private void queryAreaTrees() {
         try {
             JSONObject jo = new JSONObject(ReserveRpcCall.queryAreaTrees());
-            if (!ResUtil.checkResCode(TAG, jo)) {
+            if (!ResUtil.checkResultCode(TAG, jo)) {
                 return;
             }
             JSONObject areaTrees = jo.getJSONObject("areaTrees");
@@ -300,7 +300,7 @@ public class DebugRpc {
     private void getUnlockTreeItems() {
         try {
             JSONObject jo = new JSONObject(ReserveRpcCall.queryTreeItemsForExchange("", "project"));
-            if (!ResUtil.checkResCode(TAG, jo)) {
+            if (!ResUtil.checkResultCode(TAG, jo)) {
                 return;
             }
             JSONArray ja = jo.getJSONArray("treeItems");

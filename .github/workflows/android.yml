@@ -57,10 +57,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-compatible
-          path: "./app/build/outputs/apk/compatible/release/*"
+          path: "./app/build/outputs/apk/compatible/release/*signed.apk"
 
       - name: Upload Sesame normal
         uses: actions/upload-artifact@v4
         with:
           name: apk-normal
-          path: "./app/build/outputs/apk/normal/release/*"
+          path: "./app/build/outputs/apk/normal/release/*signed.apk"

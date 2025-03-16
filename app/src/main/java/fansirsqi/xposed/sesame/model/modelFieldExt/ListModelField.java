@@ -1,19 +1,23 @@
 package fansirsqi.xposed.sesame.model.modelFieldExt;
+
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
 import androidx.core.content.ContextCompat;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import fansirsqi.xposed.sesame.R;
 import fansirsqi.xposed.sesame.model.ModelField;
 import fansirsqi.xposed.sesame.ui.StringDialog;
-import java.util.ArrayList;
-import java.util.List;
 /**
  * 表示一个存储字符串列表的字段模型，用于管理和展示列表数据。
  * 提供基本的获取类型、配置值以及视图展示的方法。

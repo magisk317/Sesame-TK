@@ -137,6 +137,19 @@ public class AntSportsRpcCall {
                         + count + ",\"donateToken\":\"" + donateToken + "\",\"timezoneId\":\""
                         + timeZone + "\",\"ver\":0}]");
     }
+    // 运动币兑好礼
+    public static String queryItemDetail(String itemId) {
+        String arg = "[{\"itemId\":\"" + itemId + "\"}]";
+        return RequestManager.requestString("com.alipay.sportshealth.biz.rpc.SportsHealthItemCenterRpc.queryItemDetail", arg);
+    }
+    public static String exchangeItem(String itemId, int coinAmount) {
+        String arg = "[{\"coinAmount\":" + coinAmount + ",\"itemId\":\"" + itemId + "\"}]";
+        return RequestManager.requestString("com.alipay.sportshealth.biz.rpc.SportsHealthItemCenterRpc.exchangeItem", arg);
+    }
+    public static String queryExchangeRecordPage(String exchangeRecordId) {
+        String arg = "[{\"exchangeRecordId\":\"" + exchangeRecordId + "\"}]";
+        return RequestManager.requestString("com.alipay.sportshealth.biz.rpc.SportsHealthItemCenterRpc.queryExchangeRecordPage", arg);
+    }
     /*
      * 新版 走路线
      */

@@ -26,7 +26,7 @@ public class Logback {
         }
         PatternLayoutEncoder ple = new PatternLayoutEncoder();
         ple.setContext(lc);
-        ple.setPattern("[%thread] %logger{36} %msg%n");
+        ple.setPattern("[%thread] %logger{80} %msg%n");
         ple.start();
         LogcatAppender la = new LogcatAppender();
         la.setContext(lc);
@@ -40,21 +40,29 @@ public class Logback {
         rfa.setContext(loggerContext);
         rfa.setName(logName);
         rfa.setFile(LOG_DIR + logName + ".log");
+
         SizeAndTimeBasedRollingPolicy<ILoggingEvent> satbrp = new SizeAndTimeBasedRollingPolicy<>();
         satbrp.setContext(loggerContext);
         satbrp.setFileNamePattern(LOG_DIR + "bak/" + logName + "-%d{yyyy-MM-dd}.%i.log");
-        satbrp.setMaxFileSize(FileSize.valueOf("10MB"));
-        satbrp.setMaxHistory(7);
+        satbrp.setMaxFileSize(FileSize.valueOf("50MB"));
         satbrp.setTotalSizeCap(FileSize.valueOf("100MB"));
+        satbrp.setMaxHistory(7);
+        satbrp.setCleanHistoryOnStart(true);
         satbrp.setParent(rfa);
         satbrp.start();
+
+        
         rfa.setRollingPolicy(satbrp);
+
+
         PatternLayoutEncoder ple = new PatternLayoutEncoder();
         ple.setContext(loggerContext);
-        ple.setPattern("%d{HH:mm:ss.SSS} %msg%n");
+        ple.setPattern("%d{dd日 HH:mm:ss.SS} %msg%n");
         ple.start();
+
         rfa.setEncoder(ple);
         rfa.start();
+
         ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(logName);
         root.addAppender(rfa);
     }

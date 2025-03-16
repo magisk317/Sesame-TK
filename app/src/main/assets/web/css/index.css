@@ -192,7 +192,9 @@ video {
 }
 
 .pdTB10 {
-  padding: 10px 0;
+  padding: 2px 0;
+  border-bottom: 1px solid #f0efef;
+  margin: 1px;
 }
 
 .pdT6 {
@@ -200,23 +202,23 @@ video {
 }
 
 .main-color {
-  color: #216eee !important;
+  color: #E64000 !important;
 }
 
 .title {
   max-width: calc(100vw - 180px);
   white-space: warp;
-  color: black;
+  color: #000000;
 }
 
 .link {
-  color: #216eee;
+  color: #E64000;
   /* text-align: center; */
   height: 32px;
   /* width: 120px; */
   line-height: 32px;
   /* text-decoration: underline; */
-  /* border: 1px solid #216eee; */
+  /* border: 1px solid #E64000; */
 }
 
 .flex {
@@ -262,7 +264,7 @@ video {
 .theme1 .list-icon {
   width: 20px !important;
   height: 20px !important;
-  color: #216eee;
+  color: #E64000;
   display: block;
   margin-right: 10px;
 }
@@ -301,7 +303,7 @@ video {
 .theme2 .list-icon {
   width: 16px !important;
   height: 16px !important;
-  color: #216eee;
+  color: #E64000;
   display: block;
   /* margin-top: 5px; */
   transform: translateY(5px) !important;
@@ -312,7 +314,7 @@ video {
 }
 
 .light-label {
-  color: #216eee;
+  color: #E64000;
 }
 
 .dialog-footer-btn {
@@ -331,7 +333,7 @@ video {
 }
 
 .dialog-list .checked-label {
-  color: #216eee !important;
+  color: #E64000 !important;
 }
 
 .dialog-list .list-label {
@@ -405,7 +407,7 @@ video {
 
 .dialog-desc {
   font-size: 12px;
-  color: #f55718;
+  color: #666666;
   margin-left: 20px;
   margin-top: 8px;
 }

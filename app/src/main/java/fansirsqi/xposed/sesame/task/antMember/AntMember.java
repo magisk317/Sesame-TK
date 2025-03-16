@@ -65,10 +65,10 @@ public class AntMember extends ModelTask {
   @Override
   public Boolean check() {
     if (TaskCommon.IS_ENERGY_TIME){
-      Log.record("⏰ 当前为只收能量时间【"+ BaseModel.getEnergyTime().getValue() +"】，停止执行" + getName() + "任务！");
+      Log.record("⏸ 当前为只收能量时间【"+ BaseModel.getEnergyTime().getValue() +"】，停止执行" + getName() + "任务！");
       return false;
     }else if (TaskCommon.IS_MODULE_SLEEP_TIME) {
-      Log.record("⏰ 模块休眠时间【"+ BaseModel.getModelSleepTime().getValue() +"】停止执行" + getName() + "任务！");
+      Log.record("💤 模块休眠时间【"+ BaseModel.getModelSleepTime().getValue() +"】停止执行" + getName() + "任务！");
       return false;
     } else {
       return true;
@@ -145,7 +145,7 @@ public class AntMember extends ModelTask {
         String s = AntMemberRpcCall.queryMemberSigninCalendar();
         ThreadUtil.sleep(500);
         JSONObject jo = new JSONObject(s);
-        if (ResUtil.checkResCode(jo)) {
+        if (ResUtil.checkResultCode(jo)) {
           Log.other("会员签到📅[" + jo.getString("signinPoint") + "积分]#已签到" + jo.getString("signinSumDay") + "天");
           Status.memberSignInToday(UserMap.getCurrentUid());
         } else {
@@ -167,7 +167,7 @@ public class AntMember extends ModelTask {
       String str = AntMemberRpcCall.queryAllStatusTaskList();
       ThreadUtil.sleep(500);
       JSONObject jsonObject = new JSONObject(str);
-      if (!ResUtil.checkResCode(jsonObject)) {
+      if (!ResUtil.checkResultCode(jsonObject)) {
         Log.error(TAG + ".doAllMemberAvailableTask", "会员任务响应失败: " + jsonObject.getString("resultDesc"));
         return;
       }
@@ -194,7 +194,7 @@ public class AntMember extends ModelTask {
       String s = AntMemberRpcCall.queryPointCert(page, pageSize);
       ThreadUtil.sleep(500);
       JSONObject jo = new JSONObject(s);
-      if (ResUtil.checkResCode(jo)) {
+      if (ResUtil.checkResultCode(jo)) {
         boolean hasNextPage = jo.getBoolean("hasNextPage");
         JSONArray jaCertList = jo.getJSONArray("certList");
         for (int i = 0; i < jaCertList.length(); i++) {
@@ -204,7 +204,7 @@ public class AntMember extends ModelTask {
           int pointAmount = jo.getInt("pointAmount");
           s = AntMemberRpcCall.receivePointByUser(id);
           jo = new JSONObject(s);
-          if (ResUtil.checkResCode(jo)) {
+          if (ResUtil.checkResultCode(jo)) {
             Log.other("会员积分🎖️[领取" + bizTitle + "]#" + pointAmount + "积分");
           } else {
             Log.record(jo.getString("resultDesc"));
@@ -666,7 +666,7 @@ public class AntMember extends ModelTask {
     ThreadUtil.sleep(16000);
     String str = AntMemberRpcCall.executeTask(bizParam, bizSubType, bizType, id);
     JSONObject jo = new JSONObject(str);
-    if (!ResUtil.checkResCode(jo)) {
+    if (!ResUtil.checkResultCode(jo)) {
       Log.runtime(TAG, "执行任务失败:" + jo.optString("resultDesc"));
       return;
     }
@@ -684,7 +684,7 @@ public class AntMember extends ModelTask {
       String str = AntMemberRpcCall.queryAllStatusTaskList();
       ThreadUtil.sleep(500);
       JSONObject jsonObject = new JSONObject(str);
-      if (!ResUtil.checkResCode(jsonObject)) {
+      if (!ResUtil.checkResultCode(jsonObject)) {
         Log.error(TAG + ".checkMemberTaskFinished", "会员任务响应失败: " + jsonObject.getString("resultDesc"));
       }
       if (!jsonObject.has("availableTaskList")) {
