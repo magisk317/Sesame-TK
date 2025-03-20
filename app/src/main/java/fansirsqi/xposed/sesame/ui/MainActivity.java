@@ -145,7 +145,7 @@ public class MainActivity extends BaseActivity {
                 });
         buildVersion.setText("Build Version: " + ViewAppInfo.getAppVersion()); // 版本信息
         buildTarget.setText("Build Target: " + ViewAppInfo.getAppBuildTarget()); // 编译日期信息
-        StringDialog.showAlertDialog(this, "提示", getString(R.string.start_message), "我知道了");
+        //StringDialog.showAlertDialog(this, "提示", getString(R.string.start_message), "我知道了");
     }
 
     private void updateOneWord(String str, TextView oneWord) {
