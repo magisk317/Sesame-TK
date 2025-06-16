@@ -402,6 +402,7 @@ class MainActivity : BaseActivity() {
     }
 
     private fun showSelectionDialog(
+        return
         title: String?, options: Array<String>,
         onItemSelected: Consumer<Int>,
         negativeButtonText: String?,
