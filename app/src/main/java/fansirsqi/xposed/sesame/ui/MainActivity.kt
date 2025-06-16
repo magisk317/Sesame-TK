@@ -407,7 +407,6 @@ class MainActivity : BaseActivity() {
         negativeButtonText: String?,
         onNegativeButtonClick: Runnable,
         showDefaultOption: Boolean,
-        return
     ) {
         val latch = CountDownLatch(1)
         val dialog = StringDialog.showSelectionDialog(
