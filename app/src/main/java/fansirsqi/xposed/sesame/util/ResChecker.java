@@ -73,22 +73,7 @@ public class ResChecker {
         return core(TAG, jo);
     }
 
-    /**
-     * 检查JSON对象是否表示成功
-     * <p>
-     * 成功条件包括：<br/>
-     * - success == true<br/>
-     * - isSuccess == true<br/>
-     * - resultCode == 200 或 "SUCCESS" 或 "100"<br/>
-     * - memo == "SUCCESS"<br/>
-     *
-     * @param jsonStr JSON对象的字符串表示
-     * @return true 如果成功
-     */
-    public static boolean checkRes(String jsonStr) throws JSONException {
-        JSONObject jo = new JSONObject(jsonStr);
-        return checkRes(jo);
-    }
+
 
     /**
      * 检查JSON对象是否表示成功

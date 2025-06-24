@@ -77,7 +77,7 @@ public class AntCooperate extends ModelTask {
             if (cooperateWater.getValue()) {
                 String s = AntCooperateRpcCall.queryUserCooperatePlantList();
                 JSONObject jo = new JSONObject(s);
-                if (ResChecker.checkRes(jo)) {
+                if (ResChecker.checkRes(TAG,jo)) {
                     Log.runtime(TAG, "获取合种列表成功");
                     int userCurrentEnergy = jo.getInt("userCurrentEnergy");
                     JSONArray ja = jo.getJSONArray("cooperatePlants");
@@ -147,7 +147,7 @@ public class AntCooperate extends ModelTask {
         try {
             String s = AntCooperateRpcCall.cooperateWater(UserMap.getCurrentUid(), coopId, count);
             JSONObject jo = new JSONObject(s);
-            if (ResChecker.checkRes(jo)) {
+            if (ResChecker.checkRes(TAG,jo)) {
                 Log.forest("合种浇水🚿[" + name + "]" + jo.getString("barrageText"));
                 Status.cooperateWaterToday(UserMap.getCurrentUid(), coopId);
             } else {
@@ -200,7 +200,7 @@ public class AntCooperate extends ModelTask {
                     JSONObject rankInfo = cooperateRankInfos.getJSONObject(i);
                     if (rankInfo.getBoolean("canBeckon")) {
                         jo = new JSONObject(AntCooperateRpcCall.sendCooperateBeckon(rankInfo.getString("userId"), cooperationId));
-                        if (ResChecker.checkRes(jo)) {
+                        if (ResChecker.checkRes(TAG,jo)) {
                             Log.forest("合种🚿[" + name + "]#召唤队友[" + rankInfo.getString("displayName") + "]成功");
                         }
                         TimeUtil.sleep(1000);

@@ -8,12 +8,12 @@ public class GreenLife {
     public static void ForestMarket(String sourceType) {
         try {
             JSONObject jo = new JSONObject(AntForestRpcCall.consultForSendEnergyByAction(sourceType));
-            if (ResChecker.checkRes(jo)) {
+            if (ResChecker.checkRes(TAG,jo)) {
                 JSONObject data = jo.getJSONObject("data");
                 if (data.optBoolean("canSendEnergy", false)) {
                     Thread.sleep(300);
                     jo = new JSONObject(AntForestRpcCall.sendEnergyByAction(sourceType));
-                    if (ResChecker.checkRes(jo)) {
+                    if (ResChecker.checkRes(TAG,jo)) {
                         data = jo.getJSONObject("data");
                         if (data.optBoolean("canSendEnergy", false)) {
                             int receivedEnergyAmount = data.getInt("receivedEnergyAmount");

@@ -175,6 +175,33 @@ public class TimeUtil {
         return DateFormat.getDateInstance().format(c.getTime());
     }
 
+    /**
+     * 默认获取今天
+     *
+     * @return yyyy-MM-dd
+     */
+    public static String getDateStr2() {
+        return getDateStr2(0);
+    }
+
+    /**
+     * 默认获取今天
+     *
+     * @param plusDay 日期偏移量
+     * @return yyyy-MM-dd
+     */
+    public static String getDateStr2(int plusDay) {
+        Calendar c = Calendar.getInstance();
+        if (plusDay != 0) {
+            c.add(Calendar.DATE, plusDay);
+        }
+        Date date = c.getTime();
+
+        // 使用固定格式 yyyy-MM-dd
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(date);
+    }
+
     public static Calendar getToday() {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);

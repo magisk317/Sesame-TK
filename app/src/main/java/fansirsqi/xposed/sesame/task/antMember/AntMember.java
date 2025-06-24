@@ -220,7 +220,7 @@ public class AntMember extends ModelTask {
         String s = AntMemberRpcCall.queryMemberSigninCalendar();
         GlobalThreadPools.sleep(500);
         JSONObject jo = new JSONObject(s);
-        if (ResChecker.checkRes(jo)) {
+        if (ResChecker.checkRes(TAG,jo)) {
           Log.other("会员签到📅[" + jo.getString("signinPoint") + "积分]#已签到" + jo.getString("signinSumDay") + "天");
           Status.memberSignInToday(UserMap.getCurrentUid());
         } else {
@@ -242,7 +242,7 @@ public class AntMember extends ModelTask {
       String str = AntMemberRpcCall.queryAllStatusTaskList();
       GlobalThreadPools.sleep(500);
       JSONObject jsonObject = new JSONObject(str);
-      if (!ResChecker.checkRes(jsonObject)) {
+      if (!ResChecker.checkRes(TAG, jsonObject)) {
         Log.error(TAG + ".doAllMemberAvailableTask", "会员任务响应失败: " + jsonObject.getString("resultDesc"));
         return;
       }
@@ -269,7 +269,7 @@ public class AntMember extends ModelTask {
       String s = AntMemberRpcCall.queryPointCert(page, pageSize);
       GlobalThreadPools.sleep(500);
       JSONObject jo = new JSONObject(s);
-      if (ResChecker.checkRes(jo)) {
+      if (ResChecker.checkRes(TAG,jo)) {
         boolean hasNextPage = jo.getBoolean("hasNextPage");
         JSONArray jaCertList = jo.getJSONArray("certList");
         for (int i = 0; i < jaCertList.length(); i++) {
@@ -279,7 +279,7 @@ public class AntMember extends ModelTask {
           int pointAmount = jo.getInt("pointAmount");
           s = AntMemberRpcCall.receivePointByUser(id);
           jo = new JSONObject(s);
-          if (ResChecker.checkRes(jo)) {
+          if (ResChecker.checkRes(TAG,jo)) {
             Log.other("会员积分🎖️[领取" + bizTitle + "]#" + pointAmount + "积分");
           } else {
             Log.record(jo.getString("resultDesc"));
@@ -744,7 +744,7 @@ public class AntMember extends ModelTask {
     GlobalThreadPools.sleep(16000);
     String str = AntMemberRpcCall.executeTask(bizParam, bizSubType, bizType, id);
     JSONObject jo = new JSONObject(str);
-    if (!ResChecker.checkRes(jo)) {
+    if (!ResChecker.checkRes(TAG,jo)) {
       Log.runtime(TAG, "执行任务失败:" + jo.optString("resultDesc"));
       return;
     }
@@ -762,7 +762,7 @@ public class AntMember extends ModelTask {
       String str = AntMemberRpcCall.queryAllStatusTaskList();
       GlobalThreadPools.sleep(500);
       JSONObject jsonObject = new JSONObject(str);
-      if (!ResChecker.checkRes(jsonObject)) {
+      if (!ResChecker.checkRes(TAG, jsonObject)) {
         Log.error(TAG + ".checkMemberTaskFinished", "会员任务响应失败: " + jsonObject.getString("resultDesc"));
       }
       if (!jsonObject.has("availableTaskList")) {

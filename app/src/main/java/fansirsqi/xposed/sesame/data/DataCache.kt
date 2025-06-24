@@ -1,14 +1,12 @@
 package fansirsqi.xposed.sesame.data
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import fansirsqi.xposed.sesame.util.Files
 import fansirsqi.xposed.sesame.util.JsonUtil
 import fansirsqi.xposed.sesame.util.Log
-import fansirsqi.xposed.sesame.util.RandomUtil
-import fansirsqi.xposed.sesame.util.StringUtil
-import fansirsqi.xposed.sesame.util.TimeUtil
 import java.io.File
-import java.io.IOException
 
 /**
  * @author Byseven
@@ -22,12 +20,9 @@ object DataCache {
 
     @get:JsonIgnore
     private var init = false
-
-    // 通用数据缓存
     val dataMap: MutableMap<String, Any> = mutableMapOf()
 
     init {
-        // 在单例初始化时加载数据
         load()
     }
 
@@ -36,28 +31,6 @@ object DataCache {
             Log.error(TAG, "Value for key '$key' cannot be null.")
             return false
         }
-
-        // 如果是 Set<String> 类型 → 转换为去重的 Set
-        if (value is Set<*>) {
-            val cleanedSet = value.mapNotNull { it as? String }
-                .map { it }
-                .filter { it.isNotEmpty() }
-                .toSet()
-            dataMap[key] = cleanedSet
-        }
-        // 如果是 List<String> 类型 → 去重 + trim
-        else if (value is List<*>) {
-            val cleanedList = value.mapNotNull { it as? String }
-                .map { it }
-                .distinct()
-                .filter { it.isNotEmpty() }
-            dataMap[key] = cleanedList
-        }
-        // 其他类型直接保存
-        else {
-            dataMap[key] = value
-        }
-
         return save()
     }
 
@@ -68,100 +41,24 @@ object DataCache {
     }
 
     /**
-     * 安全获取 Set<String> 类型的缓存值，自动处理 List
-     * @/Set 类型兼容问题
+     * 通用的反序列化方法，根据指定的 TypeReference 反序列化缓存数据
+     * @param key 缓存数据的 key
+     * @param typeReference 反序列化类型
      */
-    fun getSet(key: String, defaultValue: Set<String> = emptySet()): MutableSet<String> {
+    fun <T> getDataWithType(key: String, typeReference: TypeReference<T>, defaultValue: T? = null): T? {
+        Log.runtime(TAG, "get data for key '$key'")
         val value = dataMap[key]
-        return when (value) {
-            is Set<*> -> value.mapNotNull { it as? String }.toMutableSet()
-            is List<*> -> value.mapNotNull { it as? String }.toMutableSet()
-            else -> defaultValue.toMutableSet()
+        return try {
+            if (value == null) {
+                defaultValue
+            } else {
+                ObjectMapper().convertValue(value, typeReference)
+            }
+        } catch (e: Exception) {
+            Log.error(TAG, "反序列化缓存失败：${e.message}")
+            defaultValue
         }
     }
-
-    fun getList(key: String, defaultValue: List<String> = emptyList()): List<String> {
-        val value = dataMap[key]
-        return when (value) {
-            is List<*> -> value.mapNotNull { it as? String }
-            is Set<*> -> value.mapNotNull { it as? String }
-            else -> defaultValue
-        }
-    }
-
-    fun getString(key: String, defaultValue: String = ""): String {
-        val value = dataMap[key]
-        return when (value) {
-            is String -> value
-            else -> defaultValue
-        }
-    }
-
-    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean {
-        val value = dataMap[key]
-        return when (value) {
-            is Boolean -> value
-            is String -> value.toBooleanStrictOrNull() ?: defaultValue
-            else -> defaultValue
-        }
-    }
-
-    fun getInt(key: String, defaultValue: Int = 0): Int {
-        val value = dataMap[key]
-        return when (value) {
-            is Number -> value.toInt()
-            is String -> value.toIntOrNull() ?: defaultValue
-            else -> defaultValue
-        }
-    }
-
-    fun getLong(key: String, defaultValue: Long = 0L): Long {
-        val value = dataMap[key]
-        return when (value) {
-            is Number -> value.toLong()
-            is String -> value.toLongOrNull() ?: defaultValue
-            else -> defaultValue
-        }
-    }
-
-    fun getDouble(key: String, defaultValue: Double = 0.0): Double {
-        val value = dataMap[key]
-        return when (value) {
-            is Number -> value.toDouble()
-            is String -> value.toDoubleOrNull() ?: defaultValue
-            else -> defaultValue
-        }
-    }
-
-
-    fun saveList(key: String, value: List<String>): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveString(key: String, value: String): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveBoolean(key: String, value: Boolean): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveInt(key: String, value: Int): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveLong(key: String, value: Long): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveDouble(key: String, value: Double): Boolean {
-        return saveData(key, value)
-    }
-
-    fun saveSet(key: String, value: Set<String>): Boolean {
-        return saveData(key, value)
-    }
-
 
     fun removeData(key: String): Boolean {
         if (dataMap.containsKey(key)) {
@@ -171,12 +68,10 @@ object DataCache {
         return false
     }
 
-    fun clearAllData(): Boolean {
-        dataMap.clear()
-        return save()
-    }
 
+    @Synchronized
     private fun save(): Boolean {
+        Log.runtime(TAG, "【SAVE】当前 dataMap 内容: $dataMap")
         val targetFile = File(FILE_PATH, FILENAME)
         val tempFile = File(targetFile.parent, "${targetFile.name}.tmp")
         return try {
@@ -199,6 +94,61 @@ object DataCache {
         }
     }
 
+    private fun cleanUpDataMap() {
+        fun Any.deepClean(): Any? {
+            return when (this) {
+                is Map<*, *> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val mutable = (this as? MutableMap<Any?, Any?>) ?: this.toMutableMap()
+                    val entries = mutable.toList() // 复制一份避免并发修改
+                    for ((key, value) in entries) {
+                        val cleanedValue = value?.deepClean()
+                        if (cleanedValue == null) {
+                            mutable.remove(key)
+                        } else {
+                            mutable[key] = cleanedValue
+                        }
+                    }
+                    mutable
+                }
+
+                is Collection<*> -> {
+                    // 处理 List 和 Set
+                    val list = this.filterNotNull().mapNotNull { it.deepClean() }
+                    if (list.isNotEmpty()) {
+                        if (list.all { it is String }) {
+                            // 如果全是字符串，做去重和过滤空值
+                            list.distinct().filter { it is String && it.isNotEmpty() }
+                        } else {
+                            // 否则只保留非空且已清理的元素
+                            list.distinct()
+                        }
+                    } else {
+                        emptyList<Any>()
+                    }
+                }
+
+                is String -> if (isNotEmpty()) this else null
+                else -> this
+            }
+        }
+
+        for ((key, value) in dataMap.toMap()) {
+            Log.runtime(TAG, "【CLEANUP】处理 key: $key, value type: ${value.javaClass}")
+            try {
+                val cleanedValue = value.deepClean()
+                if (cleanedValue == null || (cleanedValue is Collection<*> && cleanedValue.isEmpty())) {
+                    dataMap.remove(key)
+                } else {
+                    dataMap[key] = cleanedValue
+                }
+            } catch (e: Exception) {
+                Log.error(TAG, "清理键 '$key' 时出错: ${e.message}")
+                dataMap.remove(key)
+            }
+        }
+    }
+
     @Synchronized
     fun load(): Boolean {
         if (init) return true
@@ -208,8 +158,8 @@ object DataCache {
         try {
             if (targetFile.exists()) {
                 val json = Files.readFromFile(targetFile)
-                val mapper = JsonUtil.copyMapper()
-                mapper.readerForUpdating(this).readValue<Any>(json)
+                ObjectMapper().readerForUpdating(this).readValue<Any>(json)
+                cleanUpDataMap()
                 val formatted = JsonUtil.formatJson(this)
                 if (formatted != null && formatted != json) {
                     Log.runtime(TAG, "format $TAG config")
@@ -219,7 +169,8 @@ object DataCache {
             } else if (oldFile.exists()) {
                 if (Files.copy(oldFile, targetFile)) {
                     val json = Files.readFromFile(targetFile)
-                    JsonUtil.copyMapper().readerForUpdating(this).readValue<Any>(json)
+                    ObjectMapper().readerForUpdating(this).readValue<Any>(json)
+                    cleanUpDataMap()
                     val formatted = JsonUtil.formatJson(this)
                     if (formatted != null && formatted != json) {
                         Log.runtime(TAG, "format $TAG config")
@@ -232,7 +183,7 @@ object DataCache {
                 }
             } else {
                 Log.runtime(TAG, "init $TAG config")
-                JsonUtil.copyMapper().updateValue(this, DataCache)
+                ObjectMapper().updateValue(this, DataCache)
                 val formatted = JsonUtil.formatJson(this)
                 if (formatted != null) {
                     save()
@@ -242,20 +193,11 @@ object DataCache {
         } catch (e: Exception) {
             Log.error(TAG, "加载缓存数据失败：${e.message}")
             // 尝试恢复默认配置
-            JsonUtil.copyMapper().updateValue(this, DataCache)
+            ObjectMapper().updateValue(this, DataCache)
         } finally {
             init = success
         }
         return success
     }
-
-    fun unload() {
-        try {
-            JsonUtil.copyMapper().updateValue(this, DataCache)
-        } catch (e: Exception) {
-            Log.error(TAG, "unload ：${e.message}")
-        }
-    }
-
 
 }

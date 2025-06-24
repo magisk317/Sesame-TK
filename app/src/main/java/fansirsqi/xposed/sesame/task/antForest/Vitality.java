@@ -22,7 +22,7 @@ public class Vitality {
         JSONArray itemInfoVOList = null;
         try {
             JSONObject jo = new JSONObject(AntForestRpcCall.itemList(labelType));
-            if (ResChecker.checkRes( jo)) {
+            if (ResChecker.checkRes(TAG,  jo)) {
                 itemInfoVOList = jo.optJSONArray("itemInfoVOList");
             }
         } catch (Throwable th) {
@@ -34,7 +34,7 @@ public class Vitality {
     public static void ItemDetailBySpuId(String spuId) {
         try {
             JSONObject jo = new JSONObject(AntForestRpcCall.itemDetail(spuId));
-            if (ResChecker.checkRes( jo)) {
+            if (ResChecker.checkRes(TAG,  jo)) {
                 JSONObject ItemDetail = jo.getJSONObject("spuItemInfoVO");
                 handleItemDetail(ItemDetail);
             }

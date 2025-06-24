@@ -82,7 +82,7 @@ public class Reserve extends ModelTask {
         try {
             String response = ReserveRpcCall.queryTreeItemsForExchange();
             JSONObject jsonResponse = new JSONObject(response);
-            if (ResChecker.checkRes(jsonResponse)) {
+            if (ResChecker.checkRes(TAG, jsonResponse)) {
                 JSONArray treeItems = jsonResponse.optJSONArray("treeItems");
                 if (treeItems != null) {
                     for (int i = 0; i < treeItems.length(); i++) {
@@ -130,7 +130,7 @@ public class Reserve extends ModelTask {
                 s = ReserveRpcCall.queryTreeItemsForExchange();
             }
             JSONObject jo = new JSONObject(s);
-            if (ResChecker.checkRes(jo)) {
+            if (ResChecker.checkRes(TAG,jo)) {
                 JSONArray ja = jo.getJSONArray("treeItems");
                 for (int i = 0; i < ja.length(); i++) {
                     jo = ja.getJSONObject(i);
@@ -171,7 +171,7 @@ public class Reserve extends ModelTask {
         try {
             String s = ReserveRpcCall.queryTreeForExchange(projectId);
             JSONObject jo = new JSONObject(s);
-            if (ResChecker.checkRes(jo)) {
+            if (ResChecker.checkRes(TAG,jo)) {
                 String applyAction = jo.getString("applyAction");
                 int currentEnergy = jo.getInt("currentEnergy");
                 jo = jo.getJSONObject("exchangeableTree");
@@ -208,7 +208,7 @@ public class Reserve extends ModelTask {
             for (int applyCount = 1; applyCount <= count; applyCount++) {
                 s = ReserveRpcCall.exchangeTree(projectId);
                 jo = new JSONObject(s);
-                if (ResChecker.checkRes(jo)) {
+                if (ResChecker.checkRes(TAG,jo)) {
                     int vitalityAmount = jo.optInt("vitalityAmount", 0);
                     appliedTimes = Status.getReserveTimes(projectId) + 1;
                     String str = "领保护地🏕️[" + itemName + "]#第" + appliedTimes + "次"

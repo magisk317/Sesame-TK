@@ -592,7 +592,6 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                     stopHandler();
                     BaseModel.destroyData();
                     Status.unload();
-                    DataCache.INSTANCE.unload();
                     Notify.stop();
                     RpcIntervalLimit.clearIntervalLimit();
                     Config.unload();
