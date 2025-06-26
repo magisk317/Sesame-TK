@@ -36,7 +36,7 @@ public class UserMap {
      * 当前用户ID
      */
     @Getter
-    private static String currentUid = null;
+    public static String currentUid = null;
     /**
      * 获取只读的用户信息映射
      *

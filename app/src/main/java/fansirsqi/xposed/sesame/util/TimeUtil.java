@@ -155,18 +155,42 @@ public class TimeUtil {
         return timeCalendar;
     }
 
+    /**
+     * 获取当前时间的字符串表示
+     *
+     * @param ts 时间戳
+     * @return "下午8:00:00"（东八区）或 "8:00:00 PM"（英语环境）
+     */
     public static String getTimeStr(long ts) {
         return DateFormat.getTimeInstance().format(new Date(ts));
     }
 
+
+    /**
+     * 获取当前时间的字符串表示
+     *
+     * @return "下午8:00:00"（东八区）或 "8:00:00 PM"（英语环境）
+     */
     public static String getTimeStr() {
         return getTimeStr(System.currentTimeMillis());
     }
 
+    /**
+     * 获取当前日期的字符串表示
+     *
+     * @return 格式：yyyy年*M月*d日
+     */
     public static String getDateStr() {
         return getDateStr(0);
     }
 
+
+    /**
+     * 获取日期的字符串表示
+     *
+     * @param plusDay 日期偏移量
+     * @return 格式：yyyy年*M月*d日
+     */
     public static String getDateStr(int plusDay) {
         Calendar c = Calendar.getInstance();
         if (plusDay != 0) {

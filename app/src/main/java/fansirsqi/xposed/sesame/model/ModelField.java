@@ -28,18 +28,18 @@ import lombok.Setter;
 @Data
 public class ModelField<T> implements Serializable {
     @JsonIgnore
-    private final Type valueType; // 存储字段值的类型
+    public final Type valueType; // 存储字段值的类型
     @JsonIgnore
-    private String code; // 字段代码
+    public String code; // 字段代码
     @JsonIgnore
-    private String name; // 字段名称
+    public String name; // 字段名称
     @JsonIgnore
-    protected T defaultValue; // 默认值
+    public T defaultValue; // 默认值
     @JsonIgnore
-    private String desc;
+    public String desc;
     @Setter
     @Getter
-    protected volatile T value; // 当前值
+    public volatile T value; // 当前值
     /**
      * 默认构造函数，初始化字段值类型
      */

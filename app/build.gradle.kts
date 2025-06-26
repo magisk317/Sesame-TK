@@ -1,4 +1,3 @@
-import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -7,10 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
-tasks.register("testClasses") {
-    description = "Dummy task for compatibility"
-    group = "Verification"
-}
+
 android {
     namespace = "fansirsqi.xposed.sesame"
     compileSdk = 36
@@ -52,17 +48,18 @@ android {
             val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
             process.waitFor()
             if (process.exitValue() == 0) {
-                output
+                output.toInt()
             } else {
-                process.errorStream.bufferedReader().use { it.readText() }
-                "0"
+                val error = process.errorStream.bufferedReader().use { it.readText() }
+                println("Git error: $error")
+                "1".toInt()
             }
         } catch (_: Exception) {
-            "0"
+            "1".toInt()
         }
 
 
-        versionCode = if (gitCommitCount.isEmpty()) 0 else gitCommitCount.toInt()
+        versionCode = gitCommitCount
         versionName = if (buildTag.contains("alpha") || buildTag.contains("beta")) {
             "$major.$minor.$patch-$buildTag.$buildTargetCode"
         } else {

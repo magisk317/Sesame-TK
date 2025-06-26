@@ -351,7 +351,7 @@ public class AntForest extends ModelTask {
             collectFriendEnergy();// 优先收取好友能量
 
             JSONObject selfHomeObj = querySelfHome();
-            handleUserProps(selfHomeObj);//收取动物派遣能量
+
 
             selfHomeObj = collectUserEnergy(UserMap.getCurrentUid(), selfHomeObj); //收取自己的能量
 
@@ -372,8 +372,10 @@ public class AntForest extends ModelTask {
                 } else {
                     String _msg = "已经有动物伙伴在巡护森林~";
                     Log.record(_msg);
-//                    Toast.show(_msg);
                 }
+
+                handleUserProps(selfHomeObj);//收取动物派遣能量
+
                 //合成动物碎片
                 if (combineAnimalPiece.getValue()) {
                     queryAnimalAndPiece();

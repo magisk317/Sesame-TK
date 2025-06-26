@@ -53,7 +53,7 @@ public class ResChecker {
      * @param jo JSON对象
      * @return true 如果成功
      */
-    public static boolean checkRes(JSONObject jo) {
+    private static boolean checkRes(JSONObject jo) {
         return core(TAG, jo);
     }
 

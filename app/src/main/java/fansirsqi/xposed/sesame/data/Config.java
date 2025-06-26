@@ -238,12 +238,10 @@ public class Config {
                     Files.write2File(toSaveStr(), configV2File);
                 }
             } catch (Exception e) {
-                Log.printStackTrace(TAG, e);
-                throw new RuntimeException("重置配置失败", e);
+                Log.printStackTrace(TAG,"重置配置失败", e);
             }
         }
         INSTANCE.setInit(true);
-        Log.record(TAG, "加载配置结束");
         return INSTANCE;
     }
 

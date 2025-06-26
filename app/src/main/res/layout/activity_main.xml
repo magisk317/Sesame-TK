@@ -8,7 +8,7 @@
     <!-- 主图 -->
     <ImageView
         android:id="@+id/main_image"
-        android:layout_width="wrap_content"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:contentDescription="@string/the_image_of_main"
         android:onClick="onClick"
