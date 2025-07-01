@@ -142,19 +142,19 @@ jobs:
           to: ${{ secrets.TG_CHAT_ID }}
           token: ${{ secrets.TG_BOT_TOKEN }}
           message: |
-            📦 \*New Version ${{ steps.extract_info.outputs.version }} Build!\*
+            <b>📦 New Version ${{ steps.extract_info.outputs.version }} Build!</b>
             
-            \- Files: 
-              \- Normal: \`${{ steps.extract_info.outputs.normal_file }}\`
-              \- Compatible: \`${{ steps.extract_info.outputs.compatible_file }}\`
-            \- Branch: \`${{ github.ref_name }}\`
+            - Files: 
+              - Normal: <code>${{ steps.extract_info.outputs.normal_file }}</code>
+              - Compatible: <code>${{ steps.extract_info.outputs.compatible_file }}</code>
+            - Branch: <code>${{ github.ref_name }}</code>
             
-            \*下载说明:\*
-              \* Normal 为正常版本,适用于\`Android 8.0\`及以上的系统
-              \* Compatible 为兼容版本,适用于\`Android 7.0\`及以下的系统,最低支持\`Android 5.1\`
+            <b>下载说明:</b>
+              • Normal 为正常版本,适用于<code>Android 8.0</code>及以上的系统
+              • Compatible 为兼容版本,适用于<code>Android 7.0</code>及以下的系统,最低支持<code>Android 5.1</code>
             
-            ${{ steps.commit_details.outputs.COMMIT_MESSAGE_BODY | replace(':', '\:') | replace('(', '$$') | replace(')', '$$') | replace("'", "\'") }}
-          format: markdown
+            ${{ steps.commit_details.outputs.COMMIT_MESSAGE_BODY }}
+          format: html  # 关键修改
 
       - name: Send Normal APK
         uses: appleboy/telegram-action@master
