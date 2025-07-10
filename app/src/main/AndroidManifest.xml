@@ -51,6 +51,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
         <activity android:name="fansirsqi.xposed.sesame.ui.ExtendActivity" />
         <activity android:name="fansirsqi.xposed.sesame.ui.WebSettingsActivity" />
         <activity android:name="fansirsqi.xposed.sesame.ui.SettingActivity" />

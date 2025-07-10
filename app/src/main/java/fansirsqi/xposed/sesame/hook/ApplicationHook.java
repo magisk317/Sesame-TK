@@ -298,7 +298,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                                 }
                                 service = appService;
                                 mainHandler = new Handler(Looper.getMainLooper());
-                                AtomicReference<String> UserId = new AtomicReference<>();
+
                                 mainTask = BaseTask.newInstance("MAIN_TASK", () -> {
                                     try {
                                         if (!init) {
@@ -318,24 +318,20 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                                         }
                                         String currentUid = UserMap.getCurrentUid();
                                         String targetUid = getUserId();
-
                                         if (targetUid == null || !targetUid.equals(currentUid)) {
                                             Log.record(TAG, "用户切换或为空，重新登录");
                                             reLogin();
                                             return;
                                         }
                                         lastExecTime = currentTime; // 更新最后执行时间
-
                                         ModelTask.startAllTask(false);
                                         scheduleNextExecution(lastExecTime);
-                                        UserId.set(targetUid);
                                     } catch (Exception e) {
                                         Log.record(TAG, "❌执行异常");
                                         Log.printStackTrace(TAG, e);
                                     }
                                 });
                                 registerBroadcastReceiver(appService);
-                                FriendWatch.load(UserId.get());
                                 dayCalendar = Calendar.getInstance();
                                 if (initHandler(true)) {
                                     init = true;
@@ -344,6 +340,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                         }
 
                 );
+                execDelayedHandler(BaseModel.getCheckInterval().getValue());
                 Log.runtime(TAG, "hook service onCreate successfully");
             } catch (Throwable t) {
                 Log.runtime(TAG, "hook service onCreate err");
@@ -560,6 +557,7 @@ public class ApplicationHook implements IXposedHookLoadPackage {
                 Status.load();
                 DataCache.INSTANCE.load();
                 updateDay(userId);
+                FriendWatch.load(userId);
                 String successMsg = "芝麻粒-TK 加载成功✨";
                 Log.record(successMsg);
                 Toast.show(successMsg);
