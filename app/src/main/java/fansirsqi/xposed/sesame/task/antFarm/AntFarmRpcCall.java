@@ -526,31 +526,77 @@ public class AntFarmRpcCall {
                 "[{\"requestType\":\"RPC\",\"sceneCode\":\"ANTFARM\",\"source\":\"siliaorenwu\"}]");
     }
 
-    public static String chouchouleListFarmTask(String drawType) {
-        if ("ipDraw".equals(drawType)) { // IP抽抽乐
-            return RequestManager.requestString("com.alipay.antfarm.listFarmTask",
-                    "[{\"requestType\":\"NORMAL\",\"sceneCode\":\"ANTFARM\",\"signSceneCode\":\"\",\"source\":\"H5\",\"taskSceneCode\":\"ANTFARM_IP_DRAW_TASK\",\"topTask\":\"\"}]");
+    /**
+     * 抽抽乐-抽奖类型选择器
+     *
+     * @param drawType 抽奖类型 ipDraw-对应IP抽奖
+     * @return ""
+     */
+    private static String chouchouleSelector(String drawType) {
+        if (drawType.equals("ipDraw")) {
+            return "ANTFARM_IP_DRAW_TASK";
         }
-        return RequestManager.requestString("com.alipay.antfarm.listFarmTask",
-                "[{\"requestType\":\"NORMAL\",\"sceneCode\":\"ANTFARM\",\"signSceneCode\":\"\",\"source\":\"H5\",\"taskSceneCode\":\"ANTFARM_DRAW_TIMES_TASK\",\"topTask\":\"\"}]");
+        return "ANTFARM_DRAW_TIMES_TASK";
     }
 
-    public static String chouchouleDoFarmTask(String drawType, String bizKey) {
-        if ("ipDraw".equals(drawType)) { // IP抽抽乐
-            return RequestManager.requestString("com.alipay.antfarm.doFarmTask",
-                    "[{\"bizKey\":\"" + bizKey + "\",\"requestType\":\"RPC\",\"sceneCode\":\"ANTFARM\",\"source\":\"ip_ccl\",\"taskSceneCode\":\"ANTFARM_IP_DRAW_TASK\"}]");
-        }
-        return RequestManager.requestString("com.alipay.antfarm.doFarmTask",
-                "[{\"bizKey\":\"" + bizKey + "\",\"requestType\":\"RPC\",\"sceneCode\":\"ANTFARM\",\"source\":\"chouchoule\",\"taskSceneCode\":\"ANTFARM_DRAW_TIMES_TASK\"}]");
+    /**
+     * 查询抽抽乐任务列表
+     *
+     * @param drawType 抽奖类型
+     * @return 返回结果
+     * @throws JSONException 异常
+     */
+    public static String chouchouleListFarmTask(String drawType) throws JSONException {
+        String taskSceneCode = chouchouleSelector(drawType);
+        JSONObject args = new JSONObject();
+        args.put("requestType", "NORMAL");
+        args.put("sceneCode", "ANTFARM");
+        args.put("source", "H5");
+        args.put("taskSceneCode", taskSceneCode);
+        args.put("topTask", "");
+        String params = "[" + args + "]";
+        return RequestManager.requestString("com.alipay.antfarm.listFarmTask", params);
     }
 
-    public static String chouchouleReceiveFarmTaskAward(String drawType, String taskId) {
-        if ("ipDraw".equals(drawType)) { // IP抽抽乐
-            return RequestManager.requestString("com.alipay.antfarm.receiveFarmTaskAward",
-                    "[{\"awardType\":\"IP_DRAW_MACHINE_DRAW_TIMES\",\"requestType\":\"RPC\",\"sceneCode\":\"ANTFARM\",\"source\":\"ip_ccl\",\"taskId\":\"" + taskId + "\",\"taskSceneCode\":\"ANTFARM_IP_DRAW_TASK\"}]");
-        }
-        return RequestManager.requestString("com.alipay.antfarm.receiveFarmTaskAward",
-                "[{\"awardType\":\"DRAW_TIMES\",\"requestType\":\"RPC\",\"sceneCode\":\"ANTFARM\",\"source\":\"icon\",\"taskId\":\"" + taskId + "\",\"taskSceneCode\":\"ANTFARM_DRAW_TIMES_TASK\"}]");
+    /**
+     * 执行抽抽乐任务
+     *
+     * @param drawType 抽奖类型
+     * @param bizKey   任务ID
+     * @return 返回结果
+     * @throws JSONException 异常
+     */
+    public static String chouchouleDoFarmTask(String drawType, String bizKey) throws JSONException {
+        String taskSceneCode = chouchouleSelector(drawType);
+        JSONObject args = new JSONObject();
+        args.put("bizKey", bizKey);
+        args.put("requestType", "RPC");
+        args.put("sceneCode", "ANTFARM");
+        args.put("source", "H5");
+        args.put("taskSceneCode", taskSceneCode);
+        String params = "[" + args + "]";
+        return RequestManager.requestString("com.alipay.antfarm.doFarmTask", params);
+    }
+
+
+    /**
+     * 领取抽抽乐任务奖励-抽奖次数
+     *
+     * @param drawType 抽奖类型
+     * @param taskId   任务ID
+     * @return 返回结果
+     * @throws JSONException 异常
+     */
+    public static String chouchouleReceiveFarmTaskAward(String drawType, String taskId) throws JSONException {
+        String taskSceneCode = chouchouleSelector(drawType);
+        JSONObject args = new JSONObject();
+        args.put("requestType", "RPC");
+        args.put("sceneCode", "ANTFARM");
+        args.put("source", "H5");
+        args.put("taskId", taskId);
+        args.put("taskSceneCode", taskSceneCode);
+        String params = "[" + args + "]";
+        return RequestManager.requestString("com.alipay.antfarm.receiveFarmTaskAward", params);
     }
 
     /**

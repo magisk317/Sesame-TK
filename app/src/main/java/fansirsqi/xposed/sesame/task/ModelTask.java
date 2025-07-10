@@ -41,7 +41,6 @@ public abstract class ModelTask extends Model {
                 Log.printStackTrace(e);
             } finally {
                 MAIN_TASK_MAP.remove(task);
-                Notify.updateNextExecText(-1);
             }
         }
     };

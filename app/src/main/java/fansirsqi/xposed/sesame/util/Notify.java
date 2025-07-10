@@ -237,8 +237,7 @@ public class Notify {
     }
 
     public static void setStatusTextExec(String content) {
-        updateStatusText("⚙️ " + content + " 施工中...");
-
+        updateStatusText("🔥 " + content + " 运行中...");
     }
 
     /**

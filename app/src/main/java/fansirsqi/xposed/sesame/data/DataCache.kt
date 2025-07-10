@@ -31,7 +31,13 @@ object DataCache {
             Log.error(TAG, "Value for key '$key' cannot be null.")
             return false
         }
-        return save()
+        try {
+            dataMap[key] = value as Any
+            return save()
+        } catch (e: Exception) {
+            Log.printStackTrace(TAG, "save data for key '$key' failed", e)
+        }
+        return false
     }
 
     @Suppress("UNCHECKED_CAST")

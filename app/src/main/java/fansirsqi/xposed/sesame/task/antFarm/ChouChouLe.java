@@ -36,7 +36,7 @@ public class ChouChouLe {
         try {
             String response = AntFarmRpcCall.queryLoveCabin(UserMap.getCurrentUid());
             JSONObject jo = new JSONObject(response);
-            if (!"SUCCESS".equals(jo.optString("memo"))) {
+            if (!ResChecker.checkRes(TAG, jo)) {
                 return;
             }
 
