@@ -32,8 +32,8 @@ import fansirsqi.xposed.sesame.model.SelectModelFieldFunc
 import fansirsqi.xposed.sesame.ui.widget.ListDialog
 import fansirsqi.xposed.sesame.util.AssetUtil
 import fansirsqi.xposed.sesame.util.Detector
+import fansirsqi.xposed.sesame.util.DeviceInfoCard
 import fansirsqi.xposed.sesame.util.DeviceInfoUtil
-import fansirsqi.xposed.sesame.util.DeviceInfoUtil.DeviceInfoCard
 import fansirsqi.xposed.sesame.util.FansirsqiUtil
 import fansirsqi.xposed.sesame.util.Files
 import fansirsqi.xposed.sesame.util.Log
@@ -67,8 +67,6 @@ class MainActivity : BaseActivity() {
         }
         setContentView(R.layout.activity_main)
         val mainImage = findViewById<View>(R.id.main_image)
-        val buildVersion = findViewById<TextView>(R.id.bulid_version)
-        val buildTarget = findViewById<TextView>(R.id.bulid_target)
         oneWord = findViewById(R.id.one_word)
         val deviceInfo: ComposeView = findViewById(R.id.device_info)
         deviceInfo.setContent {
@@ -111,8 +109,6 @@ class MainActivity : BaseActivity() {
             }
             false // 如果不是目标视图，返回false
         }
-        buildVersion.text = "Build Version: " + ViewAppInfo.appVersion // 版本信息
-        buildTarget.text = "Build Target: " + ViewAppInfo.appBuildTarget // 编译日期信息
         lifecycleScope.launch {
             val result = FansirsqiUtil.getOneWord()
             oneWord.text = result

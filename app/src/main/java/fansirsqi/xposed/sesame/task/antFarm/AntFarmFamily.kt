@@ -356,18 +356,17 @@ data object AntFarmFamily {
             for (userId in familyUserIds) {
                 userIds.put(userId)
             }
-            val requestString = AntFarmRpcCall.deliverSubjectRecommend(userIds)
-            var jo = JSONObject(requestString)
-            if (ResChecker.checkRes(TAG, jo)) {
-                GlobalThreadPools.sleep(500)
-                jo = JSONObject(AntFarmRpcCall.deliverContentExpand(userIds, jo.toString().substring(1, jo.toString().length - 1)))
-                if (ResChecker.checkRes(TAG, jo)) {
+            val resp1 = JSONObject(AntFarmRpcCall.deliverSubjectRecommend(userIds))
+            if (ResChecker.checkRes(TAG, resp1)) {
+                val ariverRpcTraceId = resp1.getString("ariverRpcTraceId")
+                val resp2 = JSONObject(AntFarmRpcCall.deliverContentExpand(userIds, ariverRpcTraceId))
+                if (ResChecker.checkRes(TAG, resp2)) {
                     GlobalThreadPools.sleep(500)
-                    val content = jo.getString("content")
-                    val deliverId = jo.getString("deliverId")
-                    jo = JSONObject(AntFarmRpcCall.deliverMsgSend(groupId, userIds, content, deliverId))
-                    if (ResChecker.checkRes(TAG, jo)) {
-                        Log.farm("家庭任务🏠道早安")
+                    val content = resp1.getString("content")
+                    val deliverId = resp1.getString("deliverId")
+                    val resp3 = JSONObject(AntFarmRpcCall.deliverMsgSend(groupId, userIds, content, deliverId))
+                    if (ResChecker.checkRes(TAG, resp3)) {
+                        Log.farm("家庭任务🏠道早安: $content 🌈")
                         Status.setFlagToday("antFarm::deliverMsgSend")
                     }
                 }

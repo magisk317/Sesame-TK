@@ -685,9 +685,22 @@ public class AntFarmRpcCall {
         return RequestManager.requestString("com.alipay.antfarm.deliverSubjectRecommend", args);
     }
 
-    public static String deliverContentExpand(JSONArray friendUserIdList, String param) {
-        String args = "[{\"requestType\":\"NORMAL\",\"sceneCode\":\"ANTFARM\",\"source\":\"H5\", \"friendUserIds\":" + friendUserIdList + "," + param + "}]";
-        return RequestManager.requestString("com.alipay.antfarm.DeliverContentExpand", args);
+    public static String deliverContentExpand(JSONArray friendUserIdList, String ariverRpcTraceId) throws JSONException {
+        JSONObject args = new JSONObject();
+        args.put("ariverRpcTraceId", ariverRpcTraceId);
+        args.put("eventId", "event-deliver-familygoodmorning");
+        args.put("eventName", "AI传话家庭版早安");
+        args.put("friendUserIds", friendUserIdList);
+        args.put("memo", "SUCCESS");
+        args.put("requestType", "NORMAL");
+        args.put("resultCode", "100");
+        args.put("sceneCode", "ANTFARM");
+        args.put("sceneId", "deliver-familygoodmorning");
+        args.put("sceneName", "小鸡传话家庭版早安");
+        args.put("source", "H5");
+        args.put("success", true);
+        String params = "[" + args + "]";
+        return RequestManager.requestString("com.alipay.antfarm.DeliverContentExpand", params);
     }
 
     public static String QueryExpandContent(String deliverId) throws JSONException {
@@ -701,7 +714,6 @@ public class AntFarmRpcCall {
     }
 
     public static String deliverMsgSend(String groupId, JSONArray friendUserIds, String content, String deliverId) throws JSONException {
-//        [{"content":"朝霞映照，一日之晨，犹如江湖之始，英雄豪杰，早安！愿你今日行走江湖，剑气如虹，笑傲红尘，自在如风！","deliverId":"17508046530122088902407466501","friendUserIds":["2088222807310171","2088132047085772","2088902977414540","2088022030363513"],"groupId":"0955970009220240918164110504","mode":"AI","requestType":"NORMAL","sceneCode":"ANTFARM","source":"H5","spaceType":"ChickFamily"}]
         JSONObject args = new JSONObject();
         args.put("content", content);
         args.put("deliverId", deliverId);
