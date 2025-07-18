@@ -1,11 +1,15 @@
 package fansirsqi.xposed.sesame.util
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,9 +60,10 @@ fun DeviceInfoCard(info: Map<String, String>) {
         Column(modifier = Modifier.padding(16.dp)) {
             info.forEach { (label, value) ->
                 when (label) {
-                    "Android ID" -> {
+                    "Device ID" -> {
                         var showFull by remember { mutableStateOf(false) }
                         val displayValue = if (showFull) value else "***********"
+                        val context = LocalContext.current
                         Text(
                             text = "$label: $displayValue",
                             fontSize = 14.sp,
@@ -65,9 +71,17 @@ fun DeviceInfoCard(info: Map<String, String>) {
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
                                 .clickable { showFull = !showFull }
+                                .combinedClickable(
+                                    onClick = { showFull = !showFull },
+                                    onLongClick = {
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        val clip = ClipData.newPlainText("Android ID", value)
+                                        clipboard.setPrimaryClip(clip)
+                                        Toast.makeText(context, "Device ID copied", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
                         )
                     }
-
                     else -> {
                         Text(text = "$label: $value", fontSize = 14.sp)
                     }
@@ -92,6 +106,7 @@ object DeviceInfoUtil {
 
         fun getDeviceName(): String {
             val candidates = listOf(
+                "ro.product.odm.model",
                 "ro.product.marketname",
                 "ro.product.odm.device",
                 "ro.product.brand"
@@ -109,10 +124,9 @@ object DeviceInfoUtil {
         return mapOf(
             "Product" to "${Build.MANUFACTURER} ${Build.PRODUCT}",
             "Device" to getDeviceName(),
-            "System" to "Android ${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})",
-            "OS Build" to "${Build.ID} ${Build.DISPLAY}",
-            "OTA" to getProp("ro.build.version.ota"),
-            "Android ID" to androidId,
+            "Android Version" to "${Build.VERSION.RELEASE} SDK (${Build.VERSION.SDK_INT})",
+            "OS Build" to "${Build.DISPLAY}",
+            "Device ID" to androidId,
             "Module Version" to "${BuildConfig.VERSION}-${BuildConfig.BUILD_TAG}.${BuildConfig.BUILD_TYPE} 📦",
             "Module Build" to "${BuildConfig.BUILD_DATE} ${BuildConfig.BUILD_TIME} ⏰"
         )

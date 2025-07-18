@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.lifecycle.lifecycleScope
+import fansirsqi.xposed.sesame.BuildConfig
 import fansirsqi.xposed.sesame.R
 import fansirsqi.xposed.sesame.data.General
 import fansirsqi.xposed.sesame.data.RunType
@@ -66,7 +67,6 @@ class MainActivity : BaseActivity() {
             return
         }
         setContentView(R.layout.activity_main)
-        val mainImage = findViewById<View>(R.id.main_image)
         oneWord = findViewById(R.id.one_word)
         val deviceInfo: ComposeView = findViewById(R.id.device_info)
         deviceInfo.setContent {
@@ -96,19 +96,6 @@ class MainActivity : BaseActivity() {
             Log.error(TAG, "load libSesame err:" + e.message)
         }
 
-        mainImage?.setOnLongClickListener { v: View ->
-            // 当视图被长按时执行的操作
-            if (v.id == R.id.main_image) {
-                val data = "file://" + Files.getDebugLogFile().absolutePath
-                val it = Intent(this@MainActivity, HtmlViewerActivity::class.java)
-                it.putExtra("nextLine", false)
-                it.putExtra("canClear", true)
-                it.data = data.toUri()
-                startActivity(it)
-                return@setOnLongClickListener true // 表示事件已处理
-            }
-            false // 如果不是目标视图，返回false
-        }
         lifecycleScope.launch {
             val result = FansirsqiUtil.getOneWord()
             oneWord.text = result
@@ -157,18 +144,12 @@ class MainActivity : BaseActivity() {
     }
 
     fun onClick(v: View) {
-        if (v.id == R.id.main_image) {
-            updateSubTitle(RunType.LOADED.nickName)
-            ToastUtil.showToastWithDelay(this, "再点就要去了.~a.e", 800)
-            return
-        }
         var data = "file://"
         val id = v.id
         when (id) {
             R.id.btn_forest_log -> {
                 data += Files.getForestLogFile().absolutePath
             }
-
             R.id.btn_farm_log -> {
                 data += Files.getFarmLogFile().absolutePath
             }
@@ -237,7 +218,7 @@ class MainActivity : BaseActivity() {
             menu.add(0, 5, 5, R.string.view_capture)
             menu.add(0, 6, 6, R.string.extend)
             menu.add(0, 7, 7, R.string.settings)
-            if (ViewAppInfo.isApkInDebug) {
+            if (BuildConfig.DEBUG) {
                 menu.add(0, 8, 8, "清除配置")
             }
         } catch (e: Exception) {

@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import fansirsqi.xposed.sesame.BuildConfig
 import fansirsqi.xposed.sesame.R
 import fansirsqi.xposed.sesame.data.DataCache
 import fansirsqi.xposed.sesame.data.ViewAppInfo
@@ -92,7 +93,7 @@ class ExtendActivity : BaseActivity() {
             }
         )
         //调试功能往里加
-        if(ViewAppInfo.isApkInDebug){
+        if(BuildConfig.DEBUG){
             extendFunctions.add(
                 ExtendFunctionItem("写入光盘") {
                     AlertDialog.Builder(this)
