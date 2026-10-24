@@ -1,49 +1,50 @@
-
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("magisk.android.application")
+    id("magisk.android.compose")
+    id("magisk.app.signing")
+    id("magisk.app.packaging")
+    id("magisk.android.room")
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.rikka.tools.refine)
 }
-var isCIBuild: Boolean = System.getenv("CI").toBoolean()
 
-//isCIBuild = true // 没有c++源码时开启CI构建, push前关闭
+// Keep the repository name independent from the user-facing APK artifact name.
+extra["artifactBaseName"] = "Sesame"
+
+var isCIBuild: Boolean = System.getenv("CI").toBoolean()
+val mobileEntitlementApiOrigin = findProperty("mobileEntitlementApiOrigin")?.toString()
+    ?: "https://activate.magisk317.qzz.io"
+val mobileEntitlementSigningPublicJwk = findProperty("mobileEntitlementSigningPublicJwk")?.toString()
+    ?: """{"kty":"EC","x":"4kPpwUt1wFRuF3EqGq6q57J3YmANf7wyiNH90FNkAbI","y":"U4-E1XK6LjWIXMFNEoSAoik7nD1S07BDb7qAipQd4Ts","crv":"P-256","alg":"ES256","use":"sig","kid":"mobile-entitlement-1"}"""
+fun buildConfigString(value: String): String =
+    "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 android {
-    namespace = "fansirsqi.xposed.sesame"
-    compileSdk = 36
+    namespace = "io.github.magisk317.sesame"
+
     packaging {
         jniLibs {
             useLegacyPackaging = true
         }
     }
-    val gitCommitCount: Int = runCatching {
-        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD")
-            .redirectErrorStream(true)
-            .start()
-        val output = process.inputStream.bufferedReader().use { it.readText().trim() }
-        output.toInt()
-    }.getOrElse {
-        println("获取 git 提交数失败: ${it.message}")
-        1
-    }
+
+    // 使用providers API来支持配置缓存
+    val gitCommitCount: Int = providers.exec {
+        commandLine("git", "rev-list", "--count", "HEAD")
+    }.standardOutput.asText.get().trim().toIntOrNull() ?: 1
+
+    val gitCommitHash = providers.exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+    }.standardOutput.asText.get().trim()
+
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
-        applicationId = "fansirsqi.xposed.sesame"
-        minSdk = 24
-        targetSdk = 36
-
-        if (!isCIBuild) {
-            ndk {
-                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-            }
-        }
-
+        applicationId = "io.github.magisk317.sesame"
 
         val buildDate = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).apply {
             timeZone = TimeZone.getTimeZone("GMT+8")
@@ -53,198 +54,121 @@ android {
             timeZone = TimeZone.getTimeZone("GMT+8")
         }.format(Date())
 
-        val buildTargetCode = try {
-            buildDate.replace("-", ".") + "." + buildTime.replace(":", ".")
-        } catch (_: Exception) {
-            "0000"
-        }
-
         versionCode = gitCommitCount
-        val buildTag = "beta"
-        versionName = "v0.2.7.rc$gitCommitCount-$buildTag"
 
         buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
         buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
-        buildConfigField("String", "BUILD_NUMBER", "\"$buildTargetCode\"")
-        buildConfigField("String", "BUILD_TAG", "\"$buildTag\"")
-        buildConfigField("String", "VERSION", "\"$versionName\"")
+        buildConfigField("String", "COMMIT_HASH", "\"$gitCommitHash\"")
+        buildConfigField("String", "MOBILE_ENTITLEMENT_API_ORIGIN", buildConfigString(mobileEntitlementApiOrigin))
+        buildConfigField("String", "MOBILE_ENTITLEMENT_SIGNING_PUBLIC_JWK", buildConfigString(mobileEntitlementSigningPublicJwk))
+        buildConfigField("String", "MOBILE_ENTITLEMENT_CHANNEL", "\"sideload\"")
+    }
 
-        ndk {
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-        }
-
-        testOptions {
-            unitTests.all {
-                it.enabled = false
-            }
-        }
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+        disable += setOf(
+            "NotShrinkingResources",
+            "VectorRaster",
+            "IconLocation",
+            "MonochromeLauncherIcon",
+            "PrivateResource",
+            "Typos",
+            "IconXmlAndPng",
+            // Sesame is an arm64-only Xposed module for supported Android phones, not ChromeOS.
+            "ChromeOsAbiSupport",
+        )
     }
 
     buildFeatures {
         buildConfig = true
-        compose = true
+        aidl = true
     }
 
-
-    flavorDimensions += "default"
-    productFlavors {
-        create("normal") {
-            dimension = "default"
-            extra.set("applicationType", "Normal")
-        }
-        create("compatible") {
-            dimension = "default"
-            extra.set("applicationType", "Compatible")
-        }
-    }
     compileOptions {
-        // 全局默认设置
-        isCoreLibraryDesugaringEnabled = true // 启用脱糖
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-        }
-    }
-
-    productFlavors.all {
-        when (name) {
-            "normal" -> {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_17
-                    targetCompatibility = JavaVersion.VERSION_17
-                }
-                kotlin {
-                    compilerOptions {
-                        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-                    }
-                }
-            }
-
-            "compatible" -> {
-                compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
-                }
-                kotlin {
-                    compilerOptions {
-                        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
-                    }
-                }
-            }
-        }
-    }
-
-    signingConfigs {
-        getByName("debug") {
-        }
-    }
-
-    buildTypes {
-        getByName("debug") {
-            isDebuggable = true
-            versionNameSuffix = "-debug"
-            isShrinkResources = false
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
-        }
-        getByName("release") {
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
-        }
+        isCoreLibraryDesugaringEnabled = false
     }
 
     sourceSets {
         getByName("main") {
-            jniLibs.srcDirs("src/main/jniLibs")
+            java.directories.add("src/main/kotlin")
+            jniLibs.directories.add("src/main/jniLibs")
+        }
+        getByName("test") {
+            java.directories.add("src/test/kotlin")
         }
     }
+
     val cmakeFile = file("src/main/cpp/CMakeLists.txt")
     if (!isCIBuild && cmakeFile.exists()) {
         externalNativeBuild {
             cmake {
                 path = cmakeFile
-                version = "3.31.6"
-                ndkVersion = "29.0.13113456"
+                ndkVersion = "30.0.14904198"
             }
         }
     }
 
-    applicationVariants.all {
-        val variant = this
-        variant.outputs.all {
-            val flavorName = variant.flavorName.replaceFirstChar { it.uppercase() }
-            val fileName = "Sesame-TK-$flavorName-${variant.versionName}.apk"
-            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = fileName
+    // magisk.app.packaging defaults to multi-ABI splits; force arm64-only artifacts.
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a")
+            isUniversalApk = false
         }
     }
 }
-dependencies {
 
+dependencies {
+    // Shizuku 相关依赖
     implementation(libs.rikka.shizuku.api)
     implementation(libs.rikka.shizuku.provider)
+    implementation(libs.cmd.android)
     implementation(libs.rikka.refine)
-    implementation(libs.ui.tooling.preview.android)
 
-    val composeBom = platform("androidx.compose:compose-bom:2025.05.00")
-    implementation(composeBom)
-    testImplementation(composeBom)
-    androidTestImplementation(composeBom)
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.ui.text.google.fonts)
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
+    // Compose 额外依赖 (magisk.android.compose 已提供基础)
+    implementation(libs.androidx.material.icons.extended)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    // JSON 序列化
+    implementation(libs.kotlinx.serialization.json)
 
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
-    implementation("androidx.compose.runtime:runtime-livedata")
-    implementation("org.nanohttpd:nanohttpd:2.3.1")
+    // Kotlin 协程
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
+    // 数据观察和 HTTP 服务
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.compose.runtime.livedata)
+    implementation(libs.nanohttpd)
 
-    implementation(libs.androidx.constraintlayout)
-
-    implementation(libs.activity.compose)
-
-    implementation(libs.core.ktx)
+    // Android 核心库
+    implementation(libs.androidx.core.ktx)
     implementation(libs.kotlin.stdlib)
-    implementation(libs.slf4j.api)
-    implementation(libs.logback.android)
-    implementation(libs.appcompat)
-    implementation(libs.recyclerview)
-    implementation(libs.viewpager2)
-    implementation(libs.material)
-    implementation(libs.webkit)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.google.material)
+    implementation(libs.androidx.browser)
 
-    compileOnly(files("libs/api-82.jar"))
+    // Xposed 相关依赖
+    implementation(project(":magisk-xposed-kit"))
+    compileOnly(libs.libxposed.api)
+    implementation(libs.libxposed.service)
 
-    compileOnly(files("libs/api-100.aar"))
-    implementation(files("libs/service-100-1.0.0.aar"))
-//    implementation(libs.libxposed.service)
-//    implementation(files("libs/framework.jar"))
+    // magisk-ui-kit 共享 UI 组件
+    implementation(project(":magisk-ui-kit"))
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
+    // 代码生成和工具库
     implementation(libs.okhttp)
     implementation(libs.dexkit)
-    implementation(libs.jackson.kotlin)
-    implementation("com.tencent:mmkv:2.2.2")
 
-    coreLibraryDesugaring(libs.desugar)
-    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:+")
+    implementation(libs.hiddenapibypass)
+    implementation(libs.mobile.entitlement.android)
 
-    add("normalImplementation", libs.jackson.core)
-    add("normalImplementation", libs.jackson.databind)
-    add("normalImplementation", libs.jackson.annotations)
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
-    add("compatibleImplementation", libs.jackson.core.compatible)
-    add("compatibleImplementation", libs.jackson.databind.compatible)
-    add("compatibleImplementation", libs.jackson.annotations.compatible)
+    // Jackson JSON
 }

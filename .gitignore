@@ -80,8 +80,33 @@ demo/*
 # python virtual env
 .venv/
 test
+!/app/src/test/
+!/app/src/test/**
 
 # cache
 .lingma/rules/project_rule.md
 serve-debug/webhook.db
 *.pyc
+
+# Cursor IDE
+.cursorignore
+/.cursor/rules/zh.mdc
+
+# debug ui
+/serve-debug/web
+webui_debug*
+ai.py
+.kotlin/sessions/*
+/serve-debug/whackmole.py
+/serve-debug/user.py
+
+# Local signing secrets (do not commit)
+signature.properties
+
+# -------------------------------------------------------------------------
+# Local agent guidance
+# -------------------------------------------------------------------------
+AGENTS.md
+AGENTS.override.md
+agents.md
+agents.override.md
